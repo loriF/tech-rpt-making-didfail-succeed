@@ -1,43 +1,58 @@
-\documentclass[conference]{IEEEtran}
+\def\ttt{\texttt}
+\def\trm{\textrm}
+\def\tbf{\textbf}
+\def\tsf{\textsf}
 
-\usepackage{cite}
-\usepackage{url} % hyperref works too
-\usepackage{listings}
-\usepackage{multicol}
-\usepackage{graphicx}
-\usepackage{verbatim}
-\lstset{language=Java}
-\urlstyle{same}  % (sf also works, for something more subtle than tt)
+\newcommand{\itc}[1]{\textit{\it #1\/}}
+\newcommand{\tup}[1]{\langle #1 \rangle}
+\newcommand{\qt}[1]{\textrm{``}#1\textrm{''}}
 
-\begin{document}
+\def\ttob{\texttt{\symbol{`\{}}}
+\def\ttcb{\texttt{\symbol{`\}}}}
+\newcommand{\ttc}[1]{\ttob{#1}\ttcb}
+
+\newcommand{\src}{\ensuremath{\mathit{src}}}
+\newcommand{\sink}{\ensuremath{\mathit{sink}}}
+\newcommand{\TODO}[1]{\textcolor{red}{\tbf{TODO:} #1}}
+\newcommand{\notes}[1]{\textcolor{red}{#1}}
+\newcommand{\lori}[1]{\notes{$\stackrel{\hbox{\tiny Lori}}{\hbox{\tiny
+        says}}$: #1}}
+\newcommand{\wek}[1]{\notes{$\stackrel{\hbox{\tiny Will}}{\hbox{\tiny says}}$: #1}}
+
+\def\lxor{\oplus}
+\def\impl{\Rightarrow}
+\def\bicond{\Leftrightarrow}
+
+\def\True{\ttt{true}}
+\def\False{\ttt{false}}
+\def\ds{\displaystyle}
+
+\nonfrenchspacing
+
+%% Begin commented out region from student paper
+%% \usepackage{cite}
+%% \usepackage{url} % hyperref works too
+%% \usepackage{listings}
+%% \usepackage{multicol}
+%% \usepackage{graphicx}
+%% \usepackage{verbatim}
+%% \lstset{language=Java}
+%% \urlstyle{same}  % (sf also works, for something more subtle than tt)
+
+%% \begin{document}
+
+%% End commented out region from student paper
+
 %
 % paper title
 % can use linebreaks \\ within to get better formatting as desired
 \title{Mobile Security Final Report: \\ 
 Making DidFail Succeed}
 
-% author names and affiliations
-% use a multiple column layout for up to three different
-% affiliations
-\author{\IEEEauthorblockN{Jonathan Burket}
-\IEEEauthorblockA{Andrew ID: jburket\\
-jburket@cmu.edu}
-\and
-\IEEEauthorblockN{Jonathan Lim}
-\IEEEauthorblockA{Andrew ID: jlim2\\
-jlim2@andrew.cmu.edu}
-\and
-\IEEEauthorblockN{Wei Shen}
-\IEEEauthorblockA{Andrew ID: wshen1\\
-wshen1@andrew.cmu.edu}
-\and
-\IEEEauthorblockN{Will Snavely}
-\IEEEauthorblockA{Andrew ID: wsnavely\\
-wsnavely@andrew.cmu.edu}}
 
 % make the title area
 \maketitle
-
+\TODO{Add email addresses for everyone? For students: jburket@cmu.edu   jlim2@andrew.cmu.edu  wshen1@andrew.cmu.edu  wsnavely@andrew.cmu.edu}
 \section{Introduction}
 \label{sec:intro}
 The permission system is one of the most crucial features of Android security. By placing adjustable limitations on what resources applications can use, Android allows users to specify in detail how much trust should be given to specific applications. This allows untrusted applications to coexist in an environment with sensitive information, such as the user's location, contacts, and other personal details. 
@@ -147,7 +162,7 @@ We wrote three toy apps to test our this new feature:
 \end{itemize} 
 
 \begin{figure}[!h]
-\lstinputlisting[language=Java]{broadcasttx.java}
+\lstinputlisting[language=Java]{java/broadcasttx.java}
 \caption{Transmitter code leaking deviceID through a broadcast Intent}
 \label{fig:broadcastleak}
 \end{figure}
@@ -159,19 +174,19 @@ We wrote three toy apps to test our this new feature:
 \end{figure}
 
 \begin{figure}[!h]
-\lstinputlisting[language=Java]{broadcastonreceive.java}
+\lstinputlisting[language=Java]{java/broadcastonreceive.java}
 \caption{Code for a Broadcast Receiver that sends text messages}
 \label{fig:broadcaststaticrecvr}
 \end{figure}
 
 \begin{figure}[!h]
-\lstinputlisting[language=Java]{broadcastdyn.java}
+\lstinputlisting[language=Java]{java/broadcastdyn.java}
 \caption{Registering a Broadcast Receiver dynamically}
 \label{fig:broadcastregister}
 \end{figure}
 
 \begin{figure}[!h]
-\lstinputlisting[language=Java]{broadcastdynrcvr.java}
+\lstinputlisting[language=Java]{java/broadcastdynrcvr.java}
 \caption{Code for a Broadcast Receiver that writes to a file}
 \label{fig:broadcastdynrecvr}
 \end{figure}
@@ -201,7 +216,7 @@ While DidFail is still a ways away from detecting many of these flavors of commu
 Static fields present an interesting challenge when trying to detect inter-application flows on Android. Consider a hypothetical application \emph{AppChat} that receives intents, appends the contents of received intents to a static String \texttt{chatlog}, and then sends the contents of \texttt{chatlog} back to the application that originally issued the intent. This \emph{AppChat} application allows two applications \emph{A}, \emph{B} to communicate with each other via proxy. \emph{A} can send a message to \emph{AppChat}, that messages is saved in the static field \texttt{chatlog}, and then when \emph{B} sends a message to \emph{AppChat} it will receive back the message sent to \emph{AppChat} by \emph{A}. Thus, in an application set containing \emph{A}, \emph{B}, and \emph{AppChat}, we should detect six potential inter-application flows: \emph{A$\rightarrow$AppChat}, \emph{AppChat$\rightarrow$A}, \emph{B$\rightarrow$AppChat}, \emph{AppChat$\rightarrow$B}, \emph{A$\rightarrow$B}, and \emph{B$\rightarrow$A}.
 
 \begin{figure}
-\lstinputlisting[language=Java]{appchat.java}
+\lstinputlisting[language=Java]{java/appchat.java}
 \caption{Simple Static Field Example}
 \label{fig:appchat}
 \end{figure}
@@ -243,7 +258,7 @@ In addition we altered the original code that seeds the IFDS algorithm with init
 \subsection{Harder Static Field Flows}
 
 \begin{figure}
-\lstinputlisting[language=Java, numbers=left]{aliased.java}
+\lstinputlisting[language=Java, numbers=left]{java/aliased.java}
 \caption{Static Fields with Aliasing}
 \label{fig:aliased}
 \end{figure}
