@@ -29,26 +29,10 @@
 
 \nonfrenchspacing
 
-%% Begin commented out region from student paper
-%% \usepackage{cite}
-%% \usepackage{url} % hyperref works too
-%% \usepackage{listings}
-%% \usepackage{multicol}
-%% \usepackage{graphicx}
-%% \usepackage{verbatim}
-%% \lstset{language=Java}
-%% \urlstyle{same}  % (sf also works, for something more subtle than tt)
-
-%% \begin{document}
-
-%% End commented out region from student paper
-
-%
 % paper title
 % can use linebreaks \\ within to get better formatting as desired
 %%%%\title{Making DidFail Succeed \\ 
 %%%%Enhancing the CERT Static Taintflow Analyzer for Android App Sets}
-
 
 % make the title area
 %%%%\maketitle
@@ -61,7 +45,7 @@ One of the core assumptions at the heart of the Android permission system is tha
 
 Consider the case where the user installs an application for recording audio notes. Because the user is recording sensitive information, he or she verifies that the application has no network access. The same user then also installs a weather application, which uses the Internet but has access to no sensitive content. Considering the applications in isolation, the user has made sensible decisions: the application which has Internet access does not have access to sensitive information and vice versa. If, however, these applications can communicate (either intentionally or unintentionally), then the user's information may still be at risk. If the audio recording application can send messages to the weather app which are then sent over the Internet, an outside attacker could gain access to all audio recorded by the device.
 
-As this example demonstrates, the Android permission system alone is insufficient for reasoning about scenarios where information flow between applications circumvents intended permission limitiations. \emph{DidFail}~\cite{didfail} is a tool for detecting such flows. Given a set up of Android APKs, DidFail uses static analysis to detect cases where sensitive information may be leaked from one application to another. While DidFail is a useful tool, it currently falls short in several scenarios. In its present form, DidFail only tracks flows between Activities via intents. This means that other types flows, such as those through static fields or between an Activity and a Broadcast Receiver, are currently missed. Through our work, we were able to expand DidFail's capabilities to work with more applications and handle more types of flows (with a few bumps along the way, and some still left for future work). In Sections III-VI, we detail the four features of DidFail we focused on improving.
+As this example demonstrates, the Android permission system alone is insufficient for reasoning about scenarios where information flow between applications circumvents intended permission limitiations. \emph{DidFail}~\cite{didfail} is a tool for detecting such flows. Given a set up of Android APKs, DidFail uses static analysis to detect cases where sensitive information may be leaked from one application to another. While DidFail is a useful tool, it currently falls short in several scenarios. In its present form, DidFail only tracks flows between Activities via intents. This means that other types flows, such as those through static fields or between an Activity and a BroadcastReceiver, are currently missed. Through our work, we were able to expand DidFail's capabilities to work with more applications and handle more types of flows (with a few bumps along the way, and some still left for future work). In Sections III-VI, we detail the four features of DidFail we focused on improving.
 
 \section{DidFail}
 
@@ -93,7 +77,7 @@ A service is an application component that is meant to run without direct user i
 DidFail's \emph{APK Transformer} identifies intent sinks in an Android app by matching method signatures in the app with known intent sink method signatures. If the signatures match, an Intent ID is generated for the intent sink method. Method signatures for the non-Activity intent sinks were added in order to track intent sinks for BroadcastReceivers and Services. Similarly, FlowDroid had to be modified slightly to recognize the new Intent sinks. 
 
 \subsubsection{Matching Flows by Component Types}
-DidFail initially only handled flows involving activities. Extending DidFail to also support broadcast receivers and service components required a slight modification in how the sources and sinks were matched. Certain methods indicate the type of a receiving component, and need to be taken into account when matching receiving components and sending components $(e.g.\  \emph{startService} \rightarrow service, \emph{startActivity} \rightarrow activity).$ By recording the sink component type, we enabled the matching process to create appropriate flows.
+DidFail initially only handled flows involving activities. Extending DidFail to also support BroadcastReceivers and Service components required a slight modification in how the sources and sinks were matched. Certain methods indicate the type of a receiving component, and need to be taken into account when matching receiving components and sending components $(e.g.\  \emph{startService} \rightarrow service, \emph{startActivity} \rightarrow activity).$ By recording the sink component type, we enabled the matching process to create appropriate flows.
 
 
 \subsection{Initial Test Results}
