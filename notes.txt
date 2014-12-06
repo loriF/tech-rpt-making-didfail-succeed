@@ -1,0 +1,4 @@
+1. Possible to have sub-heading for caption, so could have short text only in the List of Figures?  
+2. Will moved the bib file from the assets directory. Recommend this.  
+3. mathmode-spacing.tex file very useful, recommend including it.
+

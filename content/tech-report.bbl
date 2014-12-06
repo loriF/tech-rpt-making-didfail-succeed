@@ -1,0 +1,95 @@
+\begin{thebibliography}{10}
+
+\bibitem{chin2011analyzing}
+Erika Chin, Adrienne~Porter Felt, Kate Greenwood, and David Wagner.
+\newblock Analyzing inter-application communication in {Android}.
+\newblock In {\em Proc.\ MobiSys}, 2011.
+
+\bibitem{ecspride2014droidbench}
+ECSPRIDE.
+\newblock Droidbench – benchmarks.
+\newblock Accessed 03-26-2014.
+
+\bibitem{enck2010taintdroid}
+William Enck, Peter Gilbert, Byung-Gon Chun, Landon~P Cox, Jaeyeon Jung,
+  Patrick McDaniel, and Anmol Sheth.
+\newblock Taintdroid: An information-flow tracking system for realtime privacy
+  monitoring on smartphones.
+\newblock In {\em Proc.\ OSDI}, 2010.
+
+\bibitem{enck2009understanding}
+William Enck, Machigar Ongtang, and Patrick~Drew McDaniel.
+\newblock Understanding {Android} security.
+\newblock {\em IEEE Security \& Privacy}, 7(1):50--57, 2009.
+
+\bibitem{felt2011android}
+Adrienne~Porter Felt, Erika Chin, Steve Hanna, Dawn Song, and David Wagner.
+\newblock Android permissions demystified.
+\newblock In {\em Proc.\ CCS}, 2011.
+
+\bibitem{felt2011permission}
+Adrienne~Porter Felt, Helen~J Wang, Alexander Moshchuk, Steve Hanna, and Erika
+  Chin.
+\newblock Permission re-delegation: Attacks and defenses.
+\newblock In {\em USENIX Security}, 2011.
+
+\bibitem{fragkaki2012modeling}
+Elli Fragkaki, Lujo Bauer, Limin Jia, and David Swasey.
+\newblock Modeling and enhancing {Android}'s permission system.
+\newblock In {\em Proc.\ ESORICS}. 2012.
+
+\bibitem{fritz2013thesis}
+Christian Fritz.
+\newblock {FlowDroid}: A precise and scalable data flow analysis for {Android}.
+\newblock Master's thesis, TU Darmstadt, July 2013.
+
+\bibitem{FlowDroid-PLDI-2014}
+Christian Fritz, Steven Arzt, Siegfried Rasthofer, Eric Bodden, Alexandre
+  Bartel, Jacques Klein, Yves le~Traon, Damien Octeau, and Patrick McDaniel.
+\newblock Flowdroid: Precise context, flow, field, object-sensitive and
+  lifecycle-aware taint analysis for {A}ndroid apps.
+\newblock In {\em Proc.\ PLDI}, 2014.
+\newblock To appear.
+
+\bibitem{hausknecht2013master}
+Daniel Hausknecht.
+\newblock Variability-aware data-flow analysis for smartphone applications.
+\newblock Master's thesis, TU Darmstadt, September 2013.
+
+\bibitem{livshits2005finding}
+V~Benjamin Livshits and Monica~S Lam.
+\newblock Finding security vulnerabilities in {Java} applications with static
+  analysis.
+\newblock In {\em Proc.\ USENIX Security}, 2005.
+
+\bibitem{lu2012chex}
+Long Lu, Zhichun Li, Zhenyu Wu, Wenke Lee, and Guofei Jiang.
+\newblock Chex: Statically vetting {Android} apps for component hijacking
+  vulnerabilities.
+\newblock In {\em CCS}, 2012.
+
+\bibitem{octeau2012retargeting}
+Damien Octeau, Somesh Jha, and Patrick McDaniel.
+\newblock Retargeting {Android} applications to {Java} bytecode.
+\newblock In {\em Proc.\ FSE}, 2012.
+
+\bibitem{octeau2013effective}
+Damien Octeau, Patrick McDaniel, Somesh Jha, Alexandre Bartel, Eric Bodden,
+  Jacques Klein, and Yves Le~Traon.
+\newblock Effective inter-component communication mapping in {Android} with
+  {Epicc}: An essential step towards holistic security analysis.
+\newblock In {\em Proc.\ USENIX Security}, 2013.
+
+\bibitem{rab14classifying}
+Siegfried Rasthofer, Steven Arzt, and Eric Bodden.
+\newblock A machine-learning approach for classifying and categorizing android
+  sources and sinks.
+\newblock In {\em Proc.\ NDSS}, 2014.
+
+\bibitem{vallee1999soot}
+Raja Vall{\'e}e-Rai, Phong Co, Etienne Gagnon, Laurie Hendren, Patrick Lam, and
+  Vijay Sundaresan.
+\newblock Soot - a {Java} bytecode optimization framework.
+\newblock In {\em Proc.\ CASCON}, 1999.
+
+\end{thebibliography}

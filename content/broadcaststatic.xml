@@ -1,0 +1,6 @@
+<receiver android:name="static_br" 
+          android:exported="true">
+  <intent-filter>
+    <action android:name="DeviceIDBroadcast>">
+  </intent-filter>
+</receiver>
