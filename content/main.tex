@@ -98,14 +98,14 @@ The previous version of DidFail did not detect dataflows with broadcast Intents.
 We made three modifications, as initial enhancements that allow DidFail to analyze some broadcast Intents. We enhanced the Epicc parser to extract information about broadcast Intents, modified FlowDroid to mark broadcast-related functions as sources/sinks, and extended Phase 2 to consume the new output resulting from the previous modifications.
 
 \subsection{Parsing Epicc Output for BroadcastReceivers}
-Dynamically declared receivers show up in the ICC field of Epicc output, rather than being captured as a static manifest field.   This field contains a "Type" key with "android. content. BroadcastReceiver" as a value.  Potential filter properties are given as a list, e.g. the Actions field in the figure below:
+Dynamically declared receivers show up in the inter-component communication (ICC) field of Epicc output, rather than being captured as a static manifest field.   This field contains a "Type" key with "android. content. BroadcastReceiver" as a value.  Potential filter properties are given as a list, e.g. the Actions field in the figure below:
 
 \begin{figure}[!h]
 \verbatiminput{epicc_br_out.txt}
 \caption{Example Epicc Output for a Broadcast Receiver}
 \end{figure}
 
-We added a separate parser named \emph{parse\_bcast} is added to \emph{epicc\_parser} to address this issue.
+We added a separate parser named \emph{parse\_bcast} to address this issue. It is used by DidFail in addition to the previously-existing parser named \emph{epicc\_parser}.
 
 \subsection{Marking Broadcast Intents as a Sink/Source in FlowDroid}
 Function signatures related to transmitting and receiving broadcast Intents were added to the APK Transformer and FlowDroid, so that they were recognized as sources/sinks. The following table shows the related function signatures:
@@ -136,7 +136,7 @@ The \emph{taintflows} program (the program responsible for executing Phase 2 of 
 We wrote three toy apps to test our this new feature:
 
 \begin{itemize}
-\item{} \emph{BroadcastTx} has the READ\_PHONE\_STATE permission and sends the device ID via a Broadcast Intent with an Action filter. See Figure~\ref{fig:broadcastleak} for the code that leaks the device id.
+\item{} \emph{BroadcastTx} has the READ\_PHONE\_STATE permission and sends the device ID via a broadcast Intent with an Action filter. See Figure~\ref{fig:broadcastleak} for the code that leaks the device ID.
 
 \item{} \emph{BroadcastRx\_Static} has the SEND\_SMS permission and receives broadcast Intents via a static receiver with the same Action filter as declared in the manifest file.  See Figure~\ref{fig:broadcastmanifest} for the manifest, and Figure~\ref{fig:broadcaststaticrecvr} for the receiver class.
 
