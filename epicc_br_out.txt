@@ -1,4 +1,0 @@
-Type: android.content.BroadcastReceiver
-No permission
-Intent Filter value: 1 possible value(s):
-Actions: [DeviceIdBroadcast]
