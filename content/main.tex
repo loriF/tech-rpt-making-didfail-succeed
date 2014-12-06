@@ -181,10 +181,8 @@ Our modified FlowDroid identified the expected sources/sinks in the toy applicat
 Phase 2 analysis correctly identified two inter-application flows: from the transmitter to the statically registered broadcast receiver, and from the transmitter to the dynamically registered broadcast receiver.
 
 \subsection{Future Work}
-Currently, in order for dynamically declared Broadcast Intent receivers to be identified as a sink/source, a dummy receiver declaration in the manifest file is manually added to make FlowDroid work. This is a known issue of FlowDroid and no easy short cut in FlowDroid code base was found to mitigate this. As a resort, we can modify the APK Transformer to add this dummy line into manifest file.
-
-
-
+Currently, for a dynamically declared BroadcastReceivers to be identified as a sink/source, a dummy declaration for a statically declared BroadcastReceiver must be added to the manifest file so that FlowDroid can appropriately analyze it. This dummy declaration could be added after analysis of the code shows a BroadcastReceiver is dynamically declared. This problem with analyzing dynamically declared BroadcastReceivers is a known issue of FlowDroid, and no easy short cut in FlowDroid code base was found to mitigate this. As future work (to be done if FlowDroid does not start to handle dynamically declared BroadcastReceivers), we could modify the APK Transformer to automatically add this dummy code into the app's manifest file.
+\TODO{Need Wei's reply: Is the paragraph above out of date?}
 
 
 
