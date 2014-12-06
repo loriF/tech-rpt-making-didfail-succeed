@@ -41,7 +41,7 @@
 \label{sec:intro}
 The permission system is one of the most crucial features of Android security. By placing adjustable limitations on what resources applications can use, Android allows users to specify in detail how much trust should be given to specific applications. This allows untrusted applications to coexist in an environment with sensitive information, such as the user's location, contacts, and other personal details. 
 
-One of the core assumptions at the heart of the Android permission system is that an application that does not have permission to access a resource has no way in which it can obtain access to that resource. This is enforced with code that checks that an application has permission for a resource when it requests it from the system. Once the application has access to the resource, however, it can use that resource as it sees fit. This can include sharing private information with other applications or executing actions on behalf of another application. Indeed, while the Android permission system is well-suited for controlling access for applications in isolation, it can fail to protect resources in cases where multiple applications cooperate.
+One of the core assumptions at the heart of the Android permission system is that an application that does not have permission to access a resource has no way in which it can obtain access to that resource. This is enforced with code that checks that an application has permission for a resource when it requests it from the system. Once the application has access to the resource, however, it can use that resource as it sees fit. This can include sharing private information with other applications or executing actions on behalf of another application. Indeed, while the Android permission system is well-suited for controlling access for applications in isolation, it can fail to protect resources, given inter-application communication (ICC).
 
 Consider the case where the user installs an application for recording audio notes. Because the user is recording sensitive information, he or she verifies that the application has no network access. The same user then also installs a weather application, which uses the Internet but has access to no sensitive content. Considering the applications in isolation, the user has made sensible decisions: the application which has Internet access does not have access to sensitive information and vice versa. If, however, these applications can communicate (either intentionally or unintentionally), then the user's information may still be at risk. If the audio recording application can send messages to the weather app which are then sent over the Internet, an outside attacker could gain access to all audio recorded by the device.
 
@@ -98,11 +98,11 @@ The previous version of DidFail did not detect dataflows with broadcast Intents.
 We made three modifications, as initial enhancements that allow DidFail to analyze some broadcast Intents. We enhanced the Epicc parser to extract information about broadcast Intents, modified FlowDroid to mark broadcast-related functions as sources/sinks, and extended Phase 2 to consume the new output resulting from the previous modifications.
 
 \subsection{Parsing Epicc Output for BroadcastReceivers}
-Dynamically declared receivers show up in the inter-component communication (ICC) field of Epicc output, rather than being captured as a static manifest field.   This field contains a "Type" key with "android. content. BroadcastReceiver" as a value.  Potential filter properties are given as a list, e.g. the Actions field in the figure below:
+Dynamically declared receivers show up in the ICC field of Epicc output, rather than being captured as a static manifest field.   This field contains a "Type" key with "android. content. BroadcastReceiver" as a value.  Potential filter properties are given as a list, e.g. the Actions field in the figure below:
 
 \begin{figure}[!h]
 \verbatiminput{epicc_br_out.txt}
-\caption{Example Epicc Output for a Broadcast Receiver}
+\caption{Example Epicc Output for a BroadcastReceiver}
 \end{figure}
 
 We added a separate parser named \emph{parse\_bcast} to address this issue. It is used by DidFail in addition to the previously-existing parser named \emph{epicc\_parser}.
@@ -145,32 +145,32 @@ We wrote three toy apps to test our this new feature:
 
 \begin{figure}[!h]
 \lstinputlisting[language=Java]{java/broadcasttx.java}
-\caption{Transmitter code leaking deviceID through a broadcast Intent}
+\caption{Transmitter code leaking device ID through a broadcast Intent}
 \label{fig:broadcastleak}
 \end{figure}
 
 \begin{figure}[!h]
 \lstinputlisting[language=XML]{broadcaststatic.xml}
-\caption{Statically declared Broadcast Intent Receiver in a manifest file}
+\caption{Statically declared BroadcastReceiver in a manifest file}
 \label{fig:broadcastmanifest}
 \end{figure}
 
 \begin{figure}[!h]
 \lstinputlisting[language=Java]{java/broadcastonreceive.java}
-\caption{Code for a Broadcast Receiver that sends text messages}
+\caption{Code for a BroadcastReceiver that sends text messages}
 \label{fig:broadcaststaticrecvr}
 \end{figure}
 
 \begin{figure}[!h]
 \lstinputlisting[language=Java]{java/broadcastdyn.java}
-\caption{Registering a Broadcast Receiver dynamically}
+\caption{Registering a BroadcastReceiver dynamically}
 \label{fig:broadcastregister}
 \end{figure}
 
 \
 \begin{figure}[!h]
 \lstinputlisting[language=Java]{java/broadcastdynrcvr.java}
-\caption{Code for a Broadcast Receiver that writes to a file}
+\caption{Code for a BroadcastReceiver that writes to a file}
 \label{fig:broadcastdynrecvr}
 \end{figure}
 
