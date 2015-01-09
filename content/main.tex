@@ -46,13 +46,13 @@
 %
 % paper title
 % can use linebreaks \\ within to get better formatting as desired
-\title{Mobile Security Final Report: \\ 
-Making DidFail Succeed}
+%%%%\title{Making DidFail Succeed \\ 
+%%%%Enhancing the CERT Static Taintflow Analyzer for Android App Sets}
 
 
 % make the title area
-\maketitle
-\TODO{Add email addresses for everyone? For students: jburket@cmu.edu   jlim2@andrew.cmu.edu  wshen1@andrew.cmu.edu  wsnavely@andrew.cmu.edu}
+%%%%\maketitle
+\TODO{emails: (jburket, jlim2, wshen1, wsnavely) @andrew.cmu.edu}
 \section{Introduction}
 \label{sec:intro}
 The permission system is one of the most crucial features of Android security. By placing adjustable limitations on what resources applications can use, Android allows users to specify in detail how much trust should be given to specific applications. This allows untrusted applications to coexist in an environment with sensitive information, such as the user's location, contacts, and other personal details. 
@@ -90,7 +90,7 @@ A service is an application component that is meant to run without direct user i
 
 \subsection{General Modifications}
 \subsubsection{Recognizing New Intent Sinks}
-DidFail's \emph{APK Transformer} identifies intent sinks in an Android app by matching method signatures in the app with known intent sink method signatures. If the signatures match, an Intent ID is generated for the intent sink method. Method signatures for the non-Activity intent sinks were added in order to track intent sinks for Broadcast Receivers and services. Similarly, FlowDroid had to be modified slightly to recognize the new Intent sinks. 
+DidFail's \emph{APK Transformer} identifies intent sinks in an Android app by matching method signatures in the app with known intent sink method signatures. If the signatures match, an Intent ID is generated for the intent sink method. Method signatures for the non-Activity intent sinks were added in order to track intent sinks for Broadcast Receivers and Services. Similarly, FlowDroid had to be modified slightly to recognize the new Intent sinks. 
 
 \subsubsection{Matching Flows by Component Types}
 DidFail initially only handled flows involving activities. Extending DidFail to also support broadcast receivers and service components required a slight modification in how the sources and sinks were matched. Certain methods indicate the type of a receiving component, and need to be taken into account when matching receiving components and sending components $(e.g.\  \emph{startService} \rightarrow service, \emph{startActivity} \rightarrow activity).$ By recording the sink component type, we enabled the matching process to create appropriate flows.
@@ -108,9 +108,8 @@ We tested the analyzer on a single app set, with two apps that we created. \emph
 
 Phase 1 and Phase 2 analysis results were as expected, tracing the tainted location information through the activity and service components, as well as identifying the sources and sinks. We also did a preliminary test run of 100 APKs for Phase 1 using the extended APK Transformer, Epicc and FlowDroid. We observed that intent sinks such as \texttt{startService} and \texttt{bindService} were identified. Further testing still needs to done to verify that the modifications improve Phase 2 results.
 
-\section{Incorporating Broadcast Receivers}
-
-Currently, DidFail only detects flows via non-broadcast Intents. To extend DidFail for broadcast intents, there are a few things we needed to consider.  First, broadcast Intents are received in a particular way: the application contains a class that extends \texttt{android.content.BroadcastReceiver}, which implements the \texttt{onReceive} method.  Second, an application can declare the broadcasts it wishes to receive in two ways: statically in the manifest, or dynamically with the \texttt{registerReceiver()} method. 
+\section{Incorporating BroadcastReceivers}
+The previous version of DidFail did not detect dataflows with broadcast Intents. To extend DidFail, we considered aspects of broadcast dataflows. First, broadcast Intents are received in a particular way: the application contains a class that extends \texttt{android.content.BroadcastReceiver}, which implements the \texttt{onReceive} method.  Second, an application can declare the broadcasts it wishes to receive in two ways: statically in the manifest, or dynamically with the \texttt{registerReceiver()} method. 
 
 Three modifications were required to make DidFail understand broadcast Intents: improving the Epicc parser to extract information about broadcast Intents, modifying FlowDroid to mark broadcast-related functions as sources/sinks, and extending Phase 2 to consume the new output resulting from the previous modifications.
 
@@ -185,6 +184,7 @@ We wrote three toy apps to test our this new feature:
 \label{fig:broadcastregister}
 \end{figure}
 
+\
 \begin{figure}[!h]
 \lstinputlisting[language=Java]{java/broadcastdynrcvr.java}
 \caption{Code for a Broadcast Receiver that writes to a file}
@@ -358,6 +358,6 @@ In our work, we added four new features to DidFail to help it both succeed with 
 
 
 \bibliographystyle{IEEEtran}
-\bibliography{IEEEabrv,./bib}
+\bibliography{content/bib}
 
 \end{document}

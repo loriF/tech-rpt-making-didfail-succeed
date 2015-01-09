@@ -2,6 +2,7 @@
 % Default layout needed so we don't have to create EVERYTHING from scratch
 \NeedsTeXFormat{LaTeX2e}
 \documentclass[10pt]{report}
+\usepackage[utf8]{inputenc}
 
 % Use the SEI Style (Listing of options here)
 %\usepackage[tr]{SEIreport} % Disables draft message in header of TR.
@@ -38,6 +39,12 @@
 \usepackage{longtable} % allows tables to break across multiple pages
 \usepackage{makeidx} % create an index
 \epstopdfsetup{update} % only regenerate pdf files when eps file has changed
+
+\usepackage{cite}
+\usepackage{listings}
+\usepackage{verbatim}
+\lstset{language=Java,flexiblecolumns=true,basicstyle=\ttfamily}
+\urlstyle{same}
 
 \usepackage[pageanchor=true,
            pdftitle={Android Taint Flow Analysis for App Sets},
@@ -110,8 +117,8 @@
 
 
 
-\monthandyear{Month and Year (date added at time of publication)}
-\reportnumber{CMU/SEI-2014-TR-XXX (REPORT NUMBERS ADDED AT TIME OF PUBLICATION)}
+\monthandyear{Month 2015 (date added at time of publication)}
+\reportnumber{CMU/SEI-2015-TR-XXX (REPORT NUMBERS ADDED AT TIME OF PUBLICATION)}
 %\reportnumber{CMU/SEI-2014-TR-XXX -DRAFT (REPORT NUMBERS ADDED AT TIME OF PUBLICATION)}
 %\reportnumber{CMU/SEI-2014-TN-XXX (REPORT NUMBERS ADDED AT TIME OF PUBLICATION)}
 \programname{Program Name}
@@ -167,8 +174,8 @@
 	\newpage\null\newpage % make blank page
 
 	% Document Executive Summary
-	\include{content/execsummary}
-	\newpage\null\newpage % make blank page
+	%\include{content/execsummary}
+	%\newpage\null\newpage % make blank page
 
 	% Document Abstract
 	\include{content/abstract}
