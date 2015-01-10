@@ -229,7 +229,7 @@ This majority of this algorithm is based on the general IFDS Framework for dataf
 Note that in the original FlowDroid, since all taint sources and sinks are function calls, an assignment of the form $x = y$ can only propagate taint, not create or destroy it. In order for us to support static fields, however, we need to change this. We modified the flow function for assignment statements to instead have the following logic:
 
 \begin{itemize}
-\item If $y$ is a static field, mark $x$ with taint $T_x$, where $T_x$ is taint originating from static field $x$
+\item If $y$ is a static field, mark $x$ with taint $T_y$, where $T_y$ is taint originating from static field $y$
 \item If $x$ is a static field and $y$ is tainted with taint $T$, add a $T\rightarrow x$ to the list of sink results
 \item Otherwise, the taint of $x$ is set to the taint of $y$
 \end{itemize}
@@ -248,7 +248,7 @@ Unfortunately, this simple solution does not work in any non-trivial case. Consi
 
 Naturally, whether a given term $x.y.z... = t$ is a write to a static field is an undecidable property. We can, however, obtain a conservative guess of which fields are static by creating an additional FlowDroid pass that occurs before the main taint analysis. This pass, which uses the same type of taint analysis, marks all static variables as sources and then propagates taint forward. For the code in Figure~\ref{fig:aliased}, $b$ would be tainted on Line 7, which would cause $b2$ to be tainted. Since $b2$ is tainted, $b2.x$ is also tainted. Once we finish with this initial pass, we record the results of what is tainted in a set.
 
-With this initial pass completed, we now have enough information to solve deal with our aliasing problem. We now no longer need to guess whether $b2.x$ is a static field; we can simply check whether it is in the set of statements marked as tainted in the first pass. With this modification, our flow function for assignment $y = x$ now becomes the following:
+With this initial pass completed, we now have enough information to solve our aliasing problem. We now no longer need to guess whether $b2.x$ is a static field; we can simply check whether it is in the set of statements marked as tainted in the first pass. With this modification, our flow function for assignment $y = x$ now becomes the following:
 
 \begin{itemize}
 \item If $y$ is a static field, mark $x$ with taint $T_x$, where $T_x$ is taint originating from static field $x$
