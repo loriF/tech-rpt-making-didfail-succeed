@@ -336,9 +336,10 @@ Next, Phase 2 analysis needs some attention.  Some interesting questions include
 \section{Conclusion}
 
 In our work, we added four new features to DidFail to help it both succeed with more applications and detect more flows. 
-%These enhancements moved us closer to the goal of analyzing all types of components and shared static fields.
-%There are still more flow types that need to be detected (such as flows through the file system, arrays of shared static fields, ordered broadcasts, and sticky broadcasts), but our work has helped improve DidFail as a practical security tool. 
-There are still more flow types that need to be detected (such as flows through the file system, arrays of shared static fields, ordered broadcasts, and sticky broadcasts), but our work has helped improve DidFail as a practical security tool. With a few more improvements, we hope that DidFail can ultimately be incorporated as part of a review process for vetting applications for malicious behavior.
+These initial enhancements moved us significantly closer to the goal of analyzing taint flows through all types of components and shared static fields.
+%There are additional dataflows that need to be detected and analyzed, but these initial enhancements moved us significantly closer to the goal of analyzing all types of components and shared static fields.
+There are still more dataflows that need to be detected and analyzed, but our work has helped improve DidFail as a practical security tool. With a few more improvements, we hope that DidFail can ultimately be incorporated as part of a review process for vetting applications for malicious behavior.
+%There are still more flow types that need to be detected (such as flows through the file system, arrays of shared static fields, ordered broadcasts, and sticky broadcasts), but our work has helped improve DidFail as a practical security tool. With a few more improvements, we hope that DidFail can ultimately be incorporated as part of a review process for vetting applications for malicious behavior.
 
 
 \bibliographystyle{IEEEtran}
