@@ -1,6 +1,4 @@
 % Use this file to write the report abstract
 \begin{abstract}
-%\TODO{add abstract}
-
-TODO: ADD ABSTRACT
+This technical report describes enhancements recently made to DidFail, CERT's static taint flow analyzer for sets of Android apps. In addition to improving the analyzer itself, the enhancements include a new testing framework, newly developed test apps, and test results. First, our team developed a new framework for testing the DidFail analyzer, which includes a setup for cloud-based testing and instrumentation to measure performance of the analyzer. The new setup for cloud-based testing enables us to take advantage of Amazon’s \TODO{Find if ok to mention Amazon. If not, say commercially-available.} powerful virtual machines and to use virtual machines in parallel for faster test completion. Second, DidFail was modified to use the most current version of FlowDroid and Soot, and the new version of DidFail was able to successfully process three times as many apps as it was able to previously, from a set of 90 apps randomly chosen from a large collection. Third, initial enhancements were made to DidFail, which moved us closer to the goal of analyzing all types of components and shared static fields. Fourth, our team developed new test apps, which test the analytical features added to DidFail. Finally, testing was done, using this improved DidFail analyzer and the cloud-based testing framework, on the new test apps and also on apps from the Google Play store. 
 \end{abstract}
