@@ -58,7 +58,7 @@ DidFail is a static analysis tool for Android applications that detects possible
 	\label{fig:overview_phase1}
 \end{figure}
 
-FlowDroid is a tool for performing static taint tracking in Android applications. Given a set of taint sources and sinks, FlowDroid conservatively propagates taint from sources in the application, reporting all flows from sensitive sources to sinks. Sinks include function calls that access sensitive information in Android, such as \texttt{getLatitude()} or \texttt{GetSimSerialNumber()}. Sinks also include function calls that exfiltrate information, such as \texttt{Log.d} and \texttt{FileOutputStream.write}. In addition, reads from received intents are treated as sources, and writes to intents are treated as sinks. Output from FlowDroid might identify, for example, that an application reads contact information from some source, then sends it as part of an intent, or that an application reads information from an intent, then sends it as an SMS message.
+FlowDroid is a tool for performing static taint tracking in Android applications. Given a set of method signatures that correspond to taint sources and sinks, FlowDroid conservatively propagates taint from sources in the application, reporting all flows from sensitive sources to sinks. Sinks include function calls that access sensitive information in Android, such as \texttt{getLatitude()} or \texttt{getSimSerialNumber()}. Sinks also include function calls that exfiltrate information, such as \texttt{Log.d} and \texttt{FileOutputStream.write}. In addition, reads from received intents are treated as sources, and writes to intents are treated as sinks. Output from FlowDroid might identify, for example, that an application reads contact information from some source, then sends it as part of an intent, or that an application reads information from an intent, then sends it as an SMS message.
 
 Epicc~\cite{epicc} takes Android applications and performs static analysis to map out inter-component communication within the application. While this is mainly used to understand how parts of a single application work together, it can also discover what portions of the application are externally accessible via either explicit or implicit intents. While FlowDroid is useful for understanding flows within an application, Epicc reveals the interfaces that can be used for an application to communicate with other applications.
 
@@ -107,7 +107,7 @@ Dynamically declared receivers show up in the ICC field of Epicc output, rather 
 We added a separate parser named \emph{parse\_bcast} to address this issue. It is used by DidFail in addition to the previously-existing parser named \emph{epicc\_parser}.
 
 \subsection{Marking Broadcast Intents as a Sink/Source in FlowDroid}
-Function signatures related to transmitting and receiving broadcast intents were added to the APK Transformer and FlowDroid, so that they were recognized as sources/sinks. The following table shows the related function signatures:
+Function signatures related to transmitting and receiving broadcast intents were added to the APK Transformer and FlowDroid, so that they were recognized as sources/sinks. Table~\ref{fnc_bcast} shows the related functions:
 \begin{table}[!h]
 \renewcommand{\arraystretch}{1.3}
 \caption{Functions Related to Broadcasting Intents}
@@ -132,14 +132,14 @@ sendStickyOrderedBroadcastAsUser \\
 The \emph{taintflows} program (the program responsible for executing Phase 2 of DidFail) was extended to parse the additional sink/sources introduced in the previous sections, and do matching of broadcast intent filters. The logic is the same as with non-broadcast intents.
 
 \subsection{Test Applications}
-We wrote three toy apps to test our this new feature:
+We wrote three toy apps to test this new feature:
 
 \begin{itemize}
 \item{} \emph{BroadcastTx} has the READ\_PHONE\_STATE permission and sends the device ID via a broadcast intent with an Action filter. See Figure~\ref{fig:broadcastleak} for the code that leaks the device ID.
 
 \item{} \emph{BroadcastRx\_Static} has the SEND\_SMS permission and receives broadcast intents via a staticly-declared receiver with the same Action filter as declared in the manifest file.  See Figure~\ref{fig:broadcastmanifest} for the manifest, and Figure~\ref{fig:broadcaststaticrecvr} for the receiver class.
 
-\item{} \emph{BroadcastRx\_Dyn} has the ACCESS\_FINE\_LOCATION (write file) permission and receives a broadcast intent via a dynamically declared receiver with the same filter.  See Figure~\ref{fig:broadcastregister} for the receiver registration, and Figure~\ref{fig:broadcastdynrecvr} for the receiver class. 
+\item{} \emph{BroadcastRx\_Dyn} has the ACCESS\_FINE\_LOCATION permission and receives a broadcast intent via a dynamically declared receiver with the same filter.  See Figure~\ref{fig:broadcastregister} for the receiver registration, and Figure~\ref{fig:broadcastdynrecvr} for the receiver class. 
 \end{itemize} 
 
 \begin{figure}[!h]
