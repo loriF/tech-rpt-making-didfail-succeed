@@ -101,8 +101,10 @@ We made three modifications, as initial enhancements that allow DidFail to analy
 Dynamically declared receivers show up in the ICC field of Epicc output, rather than being captured as a static manifest field.   This field contains a "Type" key with "android. content. BroadcastReceiver" as a value.  Potential filter properties are given as a list, e.g. the Actions field in the figure below:
 
 \begin{figure}[!h]
+\begin{framed}
 \verbatiminput{epicc_br_out.txt}
 \caption{Example Epicc Output for a BroadcastReceiver}
+\end{framed}
 \end{figure}
 
 We added a separate parser named \emph{parse\_bcast} to address this issue. It is used by DidFail in addition to the previously-existing parser named \emph{epicc\_parser}.
@@ -144,34 +146,44 @@ We wrote three toy apps to test this new feature:
 \end{itemize} 
 
 \begin{figure}[!h]
+\begin{framed}
 \lstinputlisting[language=Java]{java/broadcasttx.java}
 \caption{Transmitter code leaking device ID through a broadcast intent}
 \label{fig:broadcastleak}
+\end{framed}
 \end{figure}
 
 \begin{figure}[!h]
+\begin{framed}
 \lstinputlisting[language=XML]{broadcaststatic.xml}
 \caption{Statically declared BroadcastReceiver in a manifest file}
 \label{fig:broadcastmanifest}
+\end{framed}
 \end{figure}
 
 \begin{figure}[!h]
+\begin{framed}
 \lstinputlisting[language=Java]{java/broadcastonreceive.java}
 \caption{Code for a BroadcastReceiver that sends text messages}
 \label{fig:broadcaststaticrecvr}
+\end{framed}
 \end{figure}
 
 \begin{figure}[!h]
+\begin{framed}
 \lstinputlisting[language=Java]{java/broadcastdyn.java}
 \caption{Registering a BroadcastReceiver dynamically}
 \label{fig:broadcastregister}
+\end{framed}
 \end{figure}
 
 \
 \begin{figure}[!h]
+\begin{framed}
 \lstinputlisting[language=Java]{java/broadcastdynrcvr.java}
 \caption{Code for a BroadcastReceiver that writes to a file}
 \label{fig:broadcastdynrecvr}
+\end{framed}
 \end{figure}
 
 \subsection{Results}
@@ -195,9 +207,11 @@ While DidFail is still a ways away from detecting many of these flavors of commu
 Static fields present an interesting challenge when trying to detect inter-application flows on Android. Consider a hypothetical application \emph{AppChat} that receives intents, appends the contents of received intents to a static String \texttt{chatlog}, and then sends the contents of \texttt{chatlog} back to the application that originally issued the intent. This \emph{AppChat} application allows two applications \emph{A}, \emph{B} to communicate with each other via proxy. \emph{A} can send a message to \emph{AppChat}, that messages is saved in the static field \texttt{chatlog}, and then when \emph{B} sends a message to \emph{AppChat} it will receive back the message sent to \emph{AppChat} by \emph{A}. Thus, in an application set containing \emph{A}, \emph{B}, and \emph{AppChat}, we should detect six potential inter-application flows: \emph{A$\rightarrow$AppChat}, \emph{AppChat$\rightarrow$A}, \emph{B$\rightarrow$AppChat}, \emph{AppChat$\rightarrow$B}, \emph{A$\rightarrow$B}, and \emph{B$\rightarrow$A}.
 
 \begin{figure}
+\begin{framed}
 \lstinputlisting[language=Java]{java/appchat.java}
 \caption{Simple Static Field Example}
 \label{fig:appchat}
+\end{framed}
 \end{figure}
 
 Unfortunately, DidFail originally fails to detect some of these potential flows, an issue that has primarily to do with DidFail's use of the FlowDroid tool~\cite{flowdroid}. Recall that FlowDroid takes in an application APK and statically detects potential flows from labeled source and sink functions in that application. In this case, \texttt{getIntent} is considered a source, while \texttt{setResult} is considered a sink. Thus, FlowDroid reports a single flow from \texttt{getIntent} to \texttt{setResult}. Notably, this result is exactly the same as if the static field \texttt{chatlog} had not been used at all (i.e. the received message is simply echoed back back as the reply). Indeed, while FlowDroid does track through static fields, it does not indicate their presence in the results. Thus, DidFail is unaware of the presence of any static fields in an application.
@@ -237,9 +251,15 @@ In addition we altered the original code that seeds the IFDS algorithm with init
 \subsection{Harder Static Field Flows}
 
 \begin{figure}
+\begin{framed}
+\begin{center}
+\begin{minipage}{0.85\textwidth}
 \lstinputlisting[language=Java, numbers=left]{java/aliased.java}
+\end{minipage}
+\end{center}
 \caption{Static Fields with Aliasing}
 \label{fig:aliased}
+\end{framed}
 \end{figure}
 
 Unfortunately, this simple solution does not work in any non-trivial case. Consider the situation where a static variable has been \emph{aliased}, as in Figure~\ref{fig:aliased}. In this case, when we run the flow function on the line $b2.x = source()$, we should treat $b2.x$ as a sink since it is a static field. The term $b2.x$ is not obviously a static field, however. Indeed it is only the fact that $b2.x$ comes after the line $b2 = b$ that causes it to be a static field. What this reveals is that, in the general case, \emph{context is important} for deciding which fields should be treated as static fields. If $b2.x$ occurred after $b2 = new Box()$, then we would not consider $b2.x$ to be a sink on Line 8.
@@ -339,7 +359,7 @@ There are still more dataflows that need to be detected and analyzed, but our wo
 
 
 %\bibliographystyle{IEEEtran}
-\bibliographystyle{plain}
+\bibliographystyle{plain2}
 \bibliography{content/bib,content/bibliography}
 
 \end{document}
