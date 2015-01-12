@@ -1,3 +1,7 @@
+% Don't always start chapter on new page. (http://tex.stackexchange.com/questions/24066/)
+\makeatletter
+\patchcmd{\chapter}{\if@openright\cleardoublepage\else\clearpage\fi}{\vspace{1in}}{}{}
+\makeatother
 
 \nonfrenchspacing
 
@@ -8,8 +12,8 @@
 
 % make the title area
 %%%%\maketitle
-\TODO{emails: (jburket, jlim2, wshen1, wsnavely) @andrew.cmu.edu}
-\section{Introduction}
+\TODO{emails: (jburket, jlim2, wshen1, wsnavely) @andrew.cmu.edu} \\\wek{Will the students' Andrew email addresses still work after they graduate?  If not, probably best to not include.  Also, don't want to make it too easy for spambots to harvest the email addresses.}
+\chapter{Introduction}
 \label{sec:intro}
 This technical report describes enhancements recently made to DidFail, CERT's static taint analyzer for sets of Android apps. In addition to improving the analyzer itself, the enhancements include a new testing framework, newly developed test apps, and test results. \TODO{WK will reword the previous 2 sentences.}
 
@@ -23,7 +27,7 @@ As this example demonstrates, the Android permission system alone is insufficien
 
 The enhanced version of DidFail, the new test apps, and the testing framework 
 
-\section{DidFail}
+\chapter{DidFail}
 
 DidFail is a static analysis tool for Android applications that detects possible information flows between applications. DidFail works using two phases: In Phase 1 (Figure~\ref{fig:overview_phase1}), each APK is fed into the \emph{APK Transformer}, a tool that annotates intent-related function calls with extra information that uniquely identifies individual cases where intents are used in the application. Once completed, the transformed APK is passed to two other tools: FlowDroid~\cite{flowdroid} and Epicc~\cite{epicc}.
 
@@ -46,17 +50,17 @@ Cases like this one are where DidFail shines.
 Unfortunately, the tool is still limited in the types of flows it can analyze. In our work, we enhanced DidFail to handle more applications and more types of flows.
 
 
-\section{Flows Through Services}
+\chapter{Flows Through Services}
 A Service is an application component that is meant to run without direct user interaction (e.g provide some functionality while the app is not in the foreground). A Service can be instantiated by passing an intent corresponding to a Service's intent filter or the name of the class instance, and making a call to the \emph{startService} method. We added new functionality to DidFail to handle some dataflows involving Services.  
 
-\subsection{General Modifications}
+\section{General Modifications}
 \subsubsection{Recognizing New Intent Sinks}
 DidFail's \emph{APK Transformer} identifies intent sinks in an Android app by matching method signatures in the app with known intent sink method signatures. If the signatures match, an intent ID is generated for the intent sink method. Method signatures for the non-Activity intent sinks were added in order to track intent sinks for BroadcastReceivers and Services. Similarly, FlowDroid had to be modified slightly to recognize the new intent sinks. 
 
 \subsubsection{Matching Flows by Component Types}
 DidFail initially only handled flows involving activities. Extending DidFail to also support BroadcastReceiver and Service components required a slight modification in how the sources and sinks were matched. Certain methods indicate the type of a receiving component, and need to be taken into account when matching receiving components and sending components $(e.g.\  \emph{startService} \rightarrow service, \emph{startActivity} \rightarrow activity).$ By recording the sink component type, we enabled the matching process to create appropriate flows.
 
-\subsection{Initial Test Results}
+\section{Initial Test Results}
 We tested the analyzer on a single app set, with two apps that we created. \emph{SendApp}'s main Activity component obtains location information by calling \texttt{getLocation()} and stores the information in an intent set with a custom action string matching \emph{SendAppService}'s intent filter (See Figure~\ref{fig:servicetest1}). The intent is passed to \texttt{startService} and is received by \emph{SendApp}'s Service component, and similarly sent to the \emph{ReceiveAppService} component. \emph{ReceiveAppService} passes the tainted information to \emph{ReceiveApp}'s Activity component by calling \texttt{startActivity}.
 
 \begin{figure}[h]
@@ -68,12 +72,12 @@ We tested the analyzer on a single app set, with two apps that we created. \emph
 
 Phase 1 and Phase 2 analysis results were as expected, tracing the tainted location information through the Activity and Service components, as well as identifying the sources and sinks. We also did a preliminary test run of 100 APKs for Phase 1 using the extended APK Transformer, Epicc and FlowDroid. We observed that intent sinks such as \texttt{startService} and \texttt{bindService} were identified. Further testing still needs to done to verify that the modifications improve Phase 2 results.
 
-\section{Incorporating BroadcastReceivers}
+\chapter{Incorporating BroadcastReceivers}
 The previous version of DidFail did not detect dataflows with broadcast intents. To extend DidFail, we considered aspects of broadcast dataflows. First, broadcast intents are received in a particular way: the application contains a class that extends \texttt{android.content.BroadcastReceiver}, which implements the \texttt{onReceive} method. Second, an application can declare the broadcasts it wishes to receive in two ways: statically in the manifest, or dynamically with the \texttt{registerReceiver()} method. Dynamically declared receivers can unregister and stop receiving broadcasts by calling the \texttt{Activity.onPause()} method. Third, there are different types of broadcasts: normal broadcasts with unordered receivers, ordered broadcasts, and sticky broadcasts that remain active after the initial broadcast distribution is completed.
 
 We made three modifications, as initial enhancements that allow DidFail to analyze some broadcast intents. We enhanced the Epicc parser to extract information about broadcast intents, modified FlowDroid to mark broadcast-related functions as sources/sinks, and extended Phase 2 to consume the new output resulting from the previous modifications.
 
-\subsection{Parsing Epicc Output for BroadcastReceivers}
+\section{Parsing Epicc Output for BroadcastReceivers}
 Dynamically declared receivers show up in the ICC field of Epicc output, rather than being captured as a static manifest field.   This field contains a "Type" key with "android. content. BroadcastReceiver" as a value.  Potential filter properties are given as a list, e.g. the Actions field in the figure below:
 
 \begin{figure}[!h]
@@ -85,7 +89,7 @@ Dynamically declared receivers show up in the ICC field of Epicc output, rather 
 
 We added a separate parser named \emph{parse\_bcast} to address this issue. It is used by DidFail in addition to the previously-existing parser named \emph{epicc\_parser}.
 
-\subsection{Marking Broadcast Intents as a Sink/Source in FlowDroid}
+\section{Marking Broadcast Intents as a Sink/Source in FlowDroid}
 Function signatures related to transmitting and receiving broadcast intents were added to the APK Transformer and FlowDroid, so that they were recognized as sources/sinks. Table~\ref{fnc_bcast} shows the related functions:
 \begin{table}[!h]
 \renewcommand{\arraystretch}{1.3}
@@ -107,10 +111,10 @@ sendStickyOrderedBroadcastAsUser \\
 \end{tabular}
 \end{table}
 
-\subsection{Trace Broadcast Flows in Taintflow}
+\section{Trace Broadcast Flows in Taintflow}
 The \emph{taintflows} program (the program responsible for executing Phase 2 of DidFail) was extended to parse the additional sink/sources introduced in the previous sections, and do matching of broadcast intent filters. The logic is the same as with non-broadcast intents.
 
-\subsection{Test Applications}
+\section{Test Applications}
 We wrote three toy apps to test this new feature:
 
 \begin{itemize}
@@ -162,21 +166,21 @@ We wrote three toy apps to test this new feature:
 \end{framed}
 \end{figure}
 
-\subsection{Results}
+\section{Results}
 
 Our modified FlowDroid identified the expected sources/sinks in the toy applications. First, it identified the leakage of the device ID through a broadcast intent in Figure~\ref{fig:broadcastleak} as a tainted source. The BroadcastReceivers in Figure~\ref{fig:broadcaststaticrecvr} and Figure~\ref{fig:broadcastdynrecvr} were identified as sinks.
 
 Phase 2 analysis correctly identified two inter-application flows: from the transmitter to the statically registered BroadcastReceiver, and from the transmitter to the dynamically registered BroadcastReceiver.
 
-\subsection{Future Work}
+\section{Future Work}
 Currently, for a dynamically declared BroadcastReceiver to be identified as a sink/source, a dummy declaration for a statically declared BroadcastReceiver must be added to the manifest file so that FlowDroid can appropriately analyze it. This dummy declaration could be added after analysis of the code shows a BroadcastReceiver is dynamically declared. This problem with analyzing dynamically declared BroadcastReceivers is a known issue of FlowDroid, and no easy short cut in FlowDroid code base was found to mitigate this. As future work (to be done if FlowDroid does not start to handle dynamically declared BroadcastReceivers), we could modify the APK Transformer to automatically add this dummy code into the app's manifest file.
 
 
-\section{Static Field-Based Flows}
+\chapter{Static Field-Based Flows}
 
 There are many ways that two Android applications could potentially communicate with each other. The most direct way is for applications to send and receive intents, which are specifically designed for inter-application communication. Other, more subtle communication mechanisms can also be used to share information between applications, including cooperative use of shared state, or any of a number of covert channels (power usage, timing, etc.). Since DidFail aims to detect how applications can communicate to share permissions, it needs to understand as many of these types of communication channels as possible.
 
-\subsection{The Issue with Static Fields}
+\section{The Issue with Static Fields}
 
 While DidFail is still a ways away from detecting many of these flavors of communication, we were able to successfully add new support for detecting flows through one popular type of shared state: \emph{static shared fields}. A static field in Java (denoted as such using the \texttt{static} keyword) is a field that has one value that is shared among all instances of a specific class. This is used to have state at the class-level rather than the instance-level.
 
@@ -194,7 +198,7 @@ Unfortunately, DidFail originally fails to detect some of these potential flows,
 
 Given only the flow from \texttt{getIntent} to \texttt{setResult}, DidFail will understand that the \emph{AppChat} application takes in input from an application and then replies to that application based on that input. Thus, DidFail will report the following flows: $I_A\rightarrow R(I_A)$ and $I_B\rightarrow R(I_B)$. These account for four of the six of the flows we described above (\emph{A$\rightarrow$AppChat}, \emph{AppChat$\rightarrow$A}, \emph{B$\rightarrow$AppChat}, \emph{AppChat$\rightarrow$B}). Crucially missing here, however, is the flow between applications \emph{A} and \emph{B}, which can communicate via the static field \texttt{chatlog}. 
 
-\subsection{Adding Support for Static Field Flows}
+\section{Adding Support for Static Field Flows}
 
 In order for DidFail to be able to reason about flows involving static fields, we must modify FlowDroid to report additional information about how static fields are used in an application. Given that static fields serve as a sort of persistent state that can be both read from and written to, it makes sense to treat static fields as if they were both a source \emph{and} a sink. In other words, if sensitive information flows from a source to a static field, we should report this flow, and if content flows from a static field to a sink, we should report this flow as well.
 
@@ -224,7 +228,7 @@ Note that in the original FlowDroid, since all taint sources and sinks are funct
 
 In addition we altered the original code that seeds the IFDS algorithm with initial edges to also add edges for assignment statements involving reads from static fields. This modification works quite well for basic examples. Considering our example in Figure~\ref{fig:appchat}, FlowDroid would now correctly report the flows $getIntent\rightarrow log$, $log\rightarrow setResult$, and $getIntent\rightarrow setResult$. With the static field information now recorded as extra information flows, we are now in a position to make judgments about inter-application flows through static fields (see Section~\ref{sec:staticphase2}).
 
-\subsection{Harder Static Field Flows}
+\section{Harder Static Field Flows}
 
 \begin{figure}
 \begin{framed}
@@ -252,7 +256,7 @@ With this initial pass completed, we now have enough information to solve our al
 
 This reuse of FlowDroid's taint analysis to find static fields turns out to be a pleasant and concise solution. In contrast, our initial attempts at a solution in one pass that involved backtracking were much more complex and did not generalize well.
 
-\subsection{Phase II Static Field Analysis}
+\section{Phase II Static Field Analysis}
 \label{sec:staticphase2}
 
 With Phase I of DidFail now producing information about flows through static fields, we still needed to make use of this information in Phase II. Recall that in our original example involving applications $A$, $B$, and $AppChat$, DidFail found the flows $I_A\rightarrow R(I_A)$ and $I_B\rightarrow R(I_B)$, where $I_A$ and $I_B$ are intents issued by $A$ and $B$, respectively. 
@@ -261,7 +265,7 @@ When we run modified FlowDroid on $AppChat$, we obtain the flows $getIntent\righ
 
 These additional flows from the Cartesian product calculation are added to the set of flows before DidFail performs its usual flow matching process (described in detail in the DidFail paper).
 
-\subsection{Drawbacks, Limitations, and Future Work}
+\section{Drawbacks, Limitations, and Future Work}
 
 Our analysis appeared to work correctly. While our modifications to support flows through static fields worked quite well in most cases, there are still some issues with our solution. With two taint passes instead of one, our required runtime can be as much as double the runtime of the original analysis. 
 
@@ -272,20 +276,20 @@ As noted earlier, detecting which fields are static is undecidable and our taint
 Finally, our current implementation does not support static fields involving arrays. This should be straightforward to do in future work, however.
 
 
-\section{Infrastructure Improvements}
+\chapter{Infrastructure Improvements}
 \label{sec:infrastructure}
 The original DidFail implementation experienced a high failure rate in the Phase 1 analysis.  Recall that Phase 1 analysis is run on each APK separately, to find tainted flows therein.  This first step of this analysis involves transforming the input APK, instrumenting the callsite of various intent-sending methods with a unique ID.  This transformed APK is then processed by FlowDroid and Epicc.  With this improvement, we sought to increase the success rate of APK processing in Phase 1.
 
-\subsection{The Problem}
+\section{The Problem}
 We identified a few issues that contributed to a high failure rate in Phase 1.  The APK Transformer was built on top of an outdated version of the Soot library, and the version of FlowDroid used was also outdated.  While the APK Transformer itself rarely failed, the APK it produced often died when passed to FlowDroid.  Moreover, some APKs encountered no explicit FlowDroid failures, but were not analyzable in a timely fashion (the FlowDroid invocation had to be killed).   These issues together resulted in a very low success rate in Phase 1.  There were no significant issues encountered with the Epicc tool.
 
-\subsection{Porting Phase 1}
+\section{Porting Phase 1}
 Our first step was to port the DidFail changes to the latest versions of Soot and FlowDroid.  This involved inspecting the modifications to the old FlowDroid branch, and moving them to the latest FlowDroid branch, then testing for correctness.  Moreover, the APK Transformer was rebased on the latest version of Soot, requiring a few source changes, and further testing.
 
-\subsection{Measuring Phase 1 Performance}
+\section{Measuring Phase 1 Performance}
 The next step was to create an instrumented harness for running the various components of Phase 1.  In particular, we were interested in gathering data about FlowDroid, since in previous test runs many APKs timed out during FlowDroid processing.  A small test harness was developed in Python for running various Phase 1 components (the APK Transformer, Epicc, FlowDroid, etc.) with various parameters, and with a specified timeout.  This harness also measured system metrics while the commands \TODO{substitute {\em DidFail analyses} for {\em commands}?} were running (memory usage, CPU usage).  
 
-\subsection{Initial Testing}
+\section{Initial Testing}
 A selection of 90 APKs were chosen randomly from a large set, with the goal of running them through both the old and new versions of DidFail, to evaluate the effectiveness of our changes.  A machine was provisioned from Amazon EC2 to run the test, since it was difficult to secure time on a machine locally with enough resources.  This machine had 4 cores and 32 GB of memory.  FlowDroid was allocated 16 GB of memory (through the heap space parameter to the JVM) and a 15-minute timeout.  APKs were processed by the APK Transformer before being sent to FlowDroid.  The graph in Figure~\ref{fig:initial_phase1} summarizes the results of this test.
 
 \begin{figure}[h]
@@ -297,7 +301,7 @@ A selection of 90 APKs were chosen randomly from a large set, with the goal of r
 
 We see that the number of APKs successfully processed by FlowDroid roughly tripled.   Very few failures were experienced.  A few APKs were skipped due to errors in the transformation stage.  21 of the APKs timed out during FlowDroid analysis, 5 more than timed out in the initial run.  The smaller number of timeouts in the initial run may be explained by the high failure rate: if more APKs hadn't run into runtime exceptions, they may have eventually timed out.  This test run showed that our modifications substantially improved the baseline success rate of Phase 1 analysis.
 
-\subsection{FlowDroid Performance Tweaks}
+\section{FlowDroid Performance Tweaks}
 Next, we investigated the 21 timeouts in the FlowDroid test.  By reviewing the performance counters, we saw that these analyses consumed all the memory allocated to them (16GB), and were unable to make further progress.
 
 The first thing we tried was vertical scaling.  We provisioned a much larger machine, and re-ran FlowDroid on one of the timed-out APKs.  This was not productive.  Despite allocating nearly 170GB of memory to the process, and disabling timeouts, the analysis reached the same state as before: consuming all allocated memory, and making next-to-no progress forward.  Here is a graph of memory usage over time (approximately 2 hours) for that analysis attempt:
@@ -318,17 +322,17 @@ We first tried source/sink filtering, using the FlowDroid parameters \texttt{noc
 Next, we tuned the pathfinding precision by setting the \texttt{aplength} parameter.  This parameter accepts an integer, and sets the FlowDroid \emph{access path} length.  Consider an expression like \texttt{X.Y.Z = 5}.  Z has an access path length of 2.  Through this parameter, one can configure how deeply FlowDroid will search access paths when tracking taint.  In previous test runs, we had set the path length to 1, so for this tuned run we tried setting the path length to 0.  Six of the twelve remaining APKs now succeeded. 
 
 The final, rather drastic option is the \texttt{nopaths} parameter, which causes FlowDroid to invest no effort in constructing accurate paths.  Rather, it will simply report source/sink pairs.  Obviously, this is bound to produce many false positives.  Nonetheless, this option was required for the remaining six APKs to make it through FlowDroid without timing out.
-\subsection{Conclusions and Future Work on Infrastructure Improvements}
+\section{Conclusions and Future Work on Infrastructure Improvements}
 With this work, we substantially improved the success rate of Phase 1 analysis, and investigated the performance of FlowDroid.  We found that vertical scaling is not a viable solution, in many cases, to FlowDroid timeouts.  Moreover, we found that some APKs will not yield to (timely) FlowDroid analysis without very liberal compromises on path precision.
 
 There are two broad directions for future work.  First, more effort can be invested into Phase 1.  FlowDroid, perhaps, could be made to be more resource efficient.  Also, more configuration options could be added to FlowDroid, to allow more granular tuning of the pathfinding process.  Further, the results reported here do not include the modifications made as part of the rest of the project (initial enhancements for analysis of dataflows which traverse shared static fields, Service components, and BroadcastReceiver components).  These additions increase the work required by the Phase 1 analysis, in some cases non-trivially.  At the time of writing, we have preliminary results that show increased timeouts when FlowDroid is run with these additions, using the same hardware configuration.  In summary, building a Phase 1 analysis that accurately finds a wide variety of flows, in a timely fashion, is a difficult problem, one that requires a variety of compromises. 
 
 Next, Phase 2 analysis needs some attention.  Some interesting questions include: How does tuning down the precision of Phase 1 affect Phase 2 results?  Now that more APKs can be processed by Phase 1, can we find legitimate, inter-applications flows in the wild with Phase 2 analysis?
 
-\section{Related Work}
+\chapter{Related Work}
 \cite{li2015icse} \TODO{Write about IccTA, Adrienne Porter Felt's permissions papers (2), SuSI, others}
 
-\section{Conclusions and Future Work}
+\chapter{Conclusions and Future Work}
 
 In our work, we made four improvements to DidFail to help it succeed with more applications and detect more flows. 
  The new setup for instrumented cloud-based testing enables us to take advantage of Amazon's powerful virtual machines and to use virtual machines in parallel for faster test completion. We will continue to use the instrumentation in the new setup, to monitor and optimize DidFail's performance. DidFail was modified to use the most current version of FlowDroid and Soot, and the new version of DidFail was able to successfully process three times as many apps as it was able to previously. The enhancements discussed in this paper moved us significantly closer to the goal of analyzing taint flows through all types of components and shared static fields.
