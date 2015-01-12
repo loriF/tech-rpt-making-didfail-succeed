@@ -69,7 +69,35 @@
 
 \renewcommand{\sfdefault}{cmss}
 
+
+\def\ttt{\texttt}
+\def\trm{\textrm}
+\def\tbf{\textbf}
+\def\tsf{\textsf}
+
+\newcommand{\itc}[1]{\textit{\it #1\/}}
+\newcommand{\tup}[1]{\langle #1 \rangle}
+\newcommand{\qt}[1]{\textrm{``}#1\textrm{''}}
+
+\def\ttob{\texttt{\symbol{`\{}}}
+\def\ttcb{\texttt{\symbol{`\}}}}
+\newcommand{\ttc}[1]{\ttob{#1}\ttcb}
+
+\newcommand{\src}{\ensuremath{\mathit{src}}}
+\newcommand{\sink}{\ensuremath{\mathit{sink}}}
 \newcommand{\TODO}[1]{\textcolor{red}{\tbf{TODO:} #1}}
+\newcommand{\notes}[1]{\textcolor{red}{#1}}
+\newcommand{\lori}[1]{\notes{$\stackrel{\hbox{\tiny Lori}}{\hbox{\tiny
+        says}}$: #1}}
+\newcommand{\wek}[1]{\notes{$\stackrel{\hbox{\tiny Will}}{\hbox{\tiny says}}$: #1}}
+
+\def\lxor{\oplus}
+\def\impl{\Rightarrow}
+\def\bicond{\Leftrightarrow}
+
+\def\True{\ttt{true}}
+\def\False{\ttt{false}}
+\def\ds{\displaystyle}
 
 
 
