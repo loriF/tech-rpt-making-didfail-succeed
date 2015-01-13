@@ -29,7 +29,6 @@ Consider the case where the user installs an application for recording audio not
 
 As this example demonstrates, the Android permission system alone is insufficient for reasoning about scenarios where information flow between applications circumvents intended permission limitiations. \emph{DidFail}~\cite{didfail} is a tool for detecting such flows. Given a set up of Android APKs, DidFail uses static analysis to detect cases where sensitive information may be leaked from one application to another. While DidFail is a useful tool, it currently falls short in several scenarios. In its previous release, DidFail only tracked flows between Activities via intents. Other types of dataflows, such as those through static fields or between an Activity and a BroadcastReceiver, were previously missed. Through our work, we were able to expand DidFail's capabilities to work with more applications and handle more types of flows (with a few bumps along the way, and some still left for future work). In Sections III-VI, we detail the four features of DidFail we focused on improving.
 
-The enhanced version of DidFail, the new test apps, and the testing framework 
 
 \chapter{DidFail}
 
