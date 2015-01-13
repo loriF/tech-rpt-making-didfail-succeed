@@ -15,7 +15,11 @@
 \TODO{emails: (jburket, jlim2, wshen1, wsnavely) @andrew.cmu.edu} \\\wek{Will the students' Andrew email addresses still work after they graduate?  If not, probably best to not include.  Also, don't want to make it too easy for spambots to harvest the email addresses.}
 \chapter{Introduction}
 \label{sec:intro}
-This technical report describes enhancements recently made to DidFail, CERT's static taint analyzer for sets of Android apps. In addition to improving the analyzer itself, the enhancements include a new testing framework, newly developed test apps, and test results. \TODO{WK will reword the previous 2 sentences.}
+\textit{DidFail} (Droid Intent Data Flow Analysis for Information Leakage) is
+static analyzer developed at CERT/SEI that detects possible flows of sensitive
+information in sets of Android apps. 
+This technical report describes enhancements recently made to the analyzer
+itself, a new testing framework, newly developed test apps, and test results. 
 
 The permission system is one of the most crucial features of Android security. By placing adjustable limitations on what resources applications can use, Android allows users to specify in detail how much trust should be given to specific applications. This allows untrusted applications to coexist in an environment with sensitive information, such as the user's location, contacts, and other personal details. 
 
