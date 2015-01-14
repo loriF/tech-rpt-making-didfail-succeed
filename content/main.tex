@@ -237,7 +237,7 @@ Note that in the original FlowDroid, since all taint sources and sinks are funct
 \item Otherwise, the taint of $x$ is set to the taint of $y$
 \end{itemize}
 
-In addition we altered the original code that seeds the IFDS algorithm with initial edges to also add edges for assignment statements involving reads from static fields. This modification works quite well for basic examples. Considering our example in Figure~\ref{fig:appchat}, FlowDroid would now correctly report the flows $getIntent\rightarrow log$, $log\rightarrow setResult$, and $getIntent\rightarrow setResult$. With the static field information now recorded as extra information flows, we are now in a position to make judgments about inter-application flows through static fields (see Section~\ref{sec:staticphase2}).
+In addition, we altered the original code that seeds the IFDS algorithm with initial edges to also add edges for assignment statements involving reads from static fields. This modification works quite well for basic examples. Considering our example in Figure~\ref{fig:appchat}, FlowDroid would now correctly report the flows $getIntent\rightarrow log$, $log\rightarrow setResult$, and $getIntent\rightarrow setResult$. With the static field information now recorded as extra information flows, we are now in a position to make judgments about inter-application flows through static fields (see Section~\ref{sec:staticphase2}).
 
 \section{Harder Static Field Flows}
 
