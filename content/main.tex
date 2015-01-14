@@ -53,7 +53,7 @@ Cases like this one are where DidFail shines.
 Unfortunately, the tool is still limited in the types of flows it can analyze. In our work, we enhanced DidFail to handle more applications and more types of flows.
 
 
-\chapter{Flows Through Services}
+\chapter{Flows Involving Services}
 A Service is an application component that is meant to run without direct user interaction (e.g., provide some functionality while the app is not in the foreground). A Service can be instantiated by passing an intent corresponding to a Service's intent filter or the name of the class instance, and making a call to the \emph{startService} method. We added new functionality to DidFail to handle some dataflows involving Services.  
 
 \section{General Modifications}
@@ -75,7 +75,7 @@ We tested the analyzer on a single app set, with two apps that we created. \emph
 
 Phase 1 and Phase 2 analysis results were as expected, tracing the tainted location information through the Activity and Service components, as well as identifying the sources and sinks. We also did a preliminary test run of 100 APKs for Phase 1 using the extended APK Transformer, Epicc and FlowDroid. We observed that intent sinks such as \texttt{startService} and \texttt{bindService} were identified. Further testing still needs to done to verify that the modifications improve Phase 2 results.
 
-\chapter{Incorporating BroadcastReceivers}
+\chapter{Flows Involving BroadcastReceivers}
 The previous version of DidFail did not detect dataflows with broadcast intents. To extend DidFail, we considered aspects of broadcast dataflows. First, broadcast intents are received in a particular way: the app contains a class that extends \texttt{android.content.BroadcastReceiver}, which implements the \texttt{onReceive} method. Second, an application can declare the broadcasts it wishes to receive in two ways: statically in the manifest, or dynamically with the \texttt{registerReceiver()} method. Third, there are different types of broadcasts: normal broadcasts with unordered receivers, ordered broadcasts, and sticky broadcasts that remain active after the initial broadcast distribution is completed.
 
 An app can unregister a dynamically registered receiver (and thereby stop it from receiving broadcasts) by calling the \texttt{Context.unregisterReceiver()} method.  DidFail does not consider calls to \texttt{unregisterReceiver()}; if it can be proven that a receiver cannot be live when a tainted broadcast is sent, then DidFail will produce a false alarm.
@@ -187,7 +187,7 @@ Currently, for a dynamically registered BroadcastReceiver to be handled by DidFa
 
 
 \newpage
-\chapter{Static Field-Based Flows}
+\chapter{Flows Involving Static Fields}
 
 There are many ways that two Android applications could potentially communicate with each other. The most direct way is for applications to send and receive intents, which are specifically designed for inter-application communication. Other, more subtle communication mechanisms can also be used to share information between applications, including cooperative use of shared state, or any of a number of covert channels (power usage, timing, etc.). Since DidFail aims to detect how applications can communicate to share permissions, it needs to understand as many of these types of communication channels as possible.
 
