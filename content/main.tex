@@ -80,10 +80,10 @@ The previous version of DidFail did not detect dataflows with broadcast intents.
 
 An app can unregister a dynamically registered receiver (and thereby stop it from receiving broadcasts) by calling the \texttt{Context.unregisterReceiver()} method.  DidFail does not consider calls to \texttt{unregisterReceiver()}; if it can be proven that a receiver cannot be live when a tainted broadcast is sent, then DidFail will produce a false alarm.
 
-We made three modifications, as initial enhancements that allow DidFail to analyze some broadcast intents. We enhanced the Epicc parser to extract information about broadcast intents, modified FlowDroid to mark broadcast-related functions as sources/sinks, and extended Phase 2 to consume the new output resulting from the previous modifications.
+We made three modifications, as initial enhancements that allow DidFail to analyze broadcast intents to a limited extent. (As mentioned in the Future Work section, a manual kludge is still necessary to handle dynamically registered receivers.) We enhanced the Epicc parser to extract information about broadcast intents, modified FlowDroid to mark broadcast-related functions as sources/sinks, and extended Phase 2 to consume the new output resulting from the previous modifications.
 
 \section{Parsing Epicc Output for BroadcastReceivers}
-Dynamically declared receivers show up in the ICC field of Epicc output, rather than being captured as a static manifest field.   This field contains a "Type" key with "android. content. BroadcastReceiver" as a value.  Potential filter properties are given as a list, e.g., the Actions field in the figure below:
+Dynamically registered receivers show up in the ICC field of Epicc output, rather than being captured as a static manifest field.   This field contains a "Type" key with "android. content. BroadcastReceiver" as a value.  Potential filter properties are given as a list, e.g., the Actions field in the figure below:
 
 \begin{figure}[!h]
 \begin{framed}
@@ -127,7 +127,7 @@ We wrote three toy apps to test this new feature:
 
 \item{} \emph{BroadcastRx\_Static} has the SEND\_SMS permission and receives broadcast intents via a staticly-declared receiver with the same Action filter as declared in the manifest file.  See Figure~\ref{fig:broadcastmanifest} for the manifest, and Figure~\ref{fig:broadcaststaticrecvr} for the receiver class.
 
-\item{} \emph{BroadcastRx\_Dyn} has the ACCESS\_FINE\_LOCATION permission and receives a broadcast intent via a dynamically declared receiver with the same filter.  See Figure~\ref{fig:broadcastregister} for the receiver registration, and Figure~\ref{fig:broadcastdynrecvr} for the receiver class. 
+\item{} \emph{BroadcastRx\_Dyn} has the ACCESS\_FINE\_LOCATION permission and receives a broadcast intent via a dynamically registered receiver with the same filter.  See Figure~\ref{fig:broadcastregister} for the receiver registration, and Figure~\ref{fig:broadcastdynrecvr} for the receiver class. 
 \end{itemize} 
 
 \begin{figure}[!h]
@@ -178,7 +178,7 @@ Our modified FlowDroid identified the expected sources/sinks in the toy applicat
 Phase 2 analysis correctly identified two inter-application flows: from the transmitter to the statically registered BroadcastReceiver, and from the transmitter to the dynamically registered BroadcastReceiver.
 
 \section{Future Work}
-Currently, for a dynamically declared BroadcastReceiver to be identified as a sink/source, a dummy declaration for a statically declared BroadcastReceiver must be added to the manifest file so that FlowDroid can appropriately analyze it. This dummy declaration could be added after analysis of the code shows a BroadcastReceiver is dynamically declared. This problem with analyzing dynamically declared BroadcastReceivers is a known issue of FlowDroid, and no easy short cut in FlowDroid code base was found to mitigate this. As future work (to be done if FlowDroid does not start to handle dynamically declared BroadcastReceivers), we could modify the APK Transformer to automatically add this dummy code into the app's manifest file.
+Currently, for a dynamically registered BroadcastReceiver to be handled by DidFail, a dummy static declaration of the BroadcastReceiver must be added to the manifest file so that FlowDroid can appropriately analyze it. This dummy declaration could be added after analysis of the code shows a BroadcastReceiver is dynamically registered. This problem with analyzing dynamically registered BroadcastReceivers is a known issue of FlowDroid, and we didn't find an easy way to modify FlowDroid to fix this. As future work, we can further investigate how to modify FlowDroid to correct this issue, or alternatively, we can modify the APK Transformer to automatically add this dummy declaration into the app's manifest file.
 
 
 \chapter{Static Field-Based Flows}
@@ -341,7 +341,7 @@ Next, Phase 2 analysis needs some attention.  Some interesting questions include
 
 In our work, we made four improvements to DidFail to help it succeed with more applications and detect more flows. 
  The new setup for instrumented cloud-based testing enables us to take advantage of Amazon's powerful virtual machines and to use virtual machines in parallel for faster test completion. We will continue to use the instrumentation in the new setup, to monitor and optimize DidFail's performance. DidFail was modified to use the most current version of FlowDroid and Soot, and the new version of DidFail was able to successfully process three times as many apps as it was able to previously. The enhancements discussed in this paper moved us significantly closer to the goal of analyzing taint flows through all types of components and shared static fields.
-There are still more dataflows that need to be detected and analyzed, but our work has helped improve DidFail as a practical security tool. As future work, we will ensure that dynamically declared BroadcastReceivers can be automatically analyzed by DidFail.
+There are still more dataflows that need to be detected and analyzed, but our work has helped improve DidFail as a practical security tool. As future work, we will ensure that dynamically registered BroadcastReceivers can be automatically analyzed by DidFail.
  With a few more improvements, we hope that DidFail can ultimately be incorporated as part of a review process for vetting applications for malicious behavior.
 %There are still more flow types that need to be detected (such as flows through the file system, arrays of shared static fields, ordered broadcasts, and sticky broadcasts), but our work has helped improve DidFail as a practical security tool. With a few more improvements, we hope that DidFail can ultimately be incorporated as part of a review process for vetting applications for malicious behavior.
 
