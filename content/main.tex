@@ -102,8 +102,10 @@ Function signatures related to transmitting and receiving broadcast intents were
 \caption{Functions Related to Broadcasting Intents}
 \label{fnc_bcast}
 \centering
+\rule{0.55\textwidth}{0.75pt}
+\\
 \begin{tabular}{l}
-\hline
+%\hline
 onReceive \\
 sendBroadcast \\
 sendBroadcastAsUser \\
@@ -113,13 +115,16 @@ sendStickyBroadcast \\
 sendStickyBroadcastAsUser \\
 sendStickyOrderedBroadcast \\
 sendStickyOrderedBroadcastAsUser \\
-\hline
+%\hline
 \end{tabular}
+\\
+\rule{0.55\textwidth}{0.75pt}
 \end{table}
 
 \section{Trace Broadcast Flows in Phase 2}
 The \texttt{taintflows.py} program (the program responsible for executing Phase 2 of DidFail) was extended to parse the additional sink/sources introduced in the previous sections, and do matching of broadcast intent filters. The logic is the same as with non-broadcast intents.
 
+\newpage
 \section{Test Applications}
 We wrote three toy apps to test this new feature:
 
@@ -182,6 +187,7 @@ Phase 2 analysis correctly identified two inter-application flows: from the tran
 Currently, for a dynamically registered BroadcastReceiver to be handled by DidFail, a dummy static declaration of the BroadcastReceiver must be added to the manifest file so that FlowDroid can appropriately analyze it. This dummy declaration could be added after analysis of the code shows a BroadcastReceiver is dynamically registered. This problem with analyzing dynamically registered BroadcastReceivers is a known issue of FlowDroid, and we didn't find an easy way to modify FlowDroid to fix this. As future work, we can further investigate how to modify FlowDroid to correct this issue, or alternatively, we can modify the APK Transformer to automatically add this dummy declaration into the app's manifest file.
 
 
+\newpage
 \chapter{Static Field-Based Flows}
 
 There are many ways that two Android applications could potentially communicate with each other. The most direct way is for applications to send and receive intents, which are specifically designed for inter-application communication. Other, more subtle communication mechanisms can also be used to share information between applications, including cooperative use of shared state, or any of a number of covert channels (power usage, timing, etc.). Since DidFail aims to detect how applications can communicate to share permissions, it needs to understand as many of these types of communication channels as possible.
@@ -190,7 +196,7 @@ There are many ways that two Android applications could potentially communicate 
 
 While DidFail is still a ways away from detecting many of these flavors of communication, we were able to successfully add new support for detecting flows through one popular type of shared state: \emph{static shared fields}. A static field in Java (denoted as such using the \texttt{static} keyword) is a field that has one value that is shared among all instances of a specific class. This is used to have state at the class-level rather than the instance-level.
 
-Static fields present an interesting challenge when trying to detect inter-application flows on Android. Consider a hypothetical application \emph{AppChat} that receives intents, appends the contents of received intents to a static String \texttt{chatlog}, and then sends the contents of \texttt{chatlog} back to the application that originally issued the intent. This \emph{AppChat} application allows two applications \emph{A}, \emph{B} to communicate with each other via proxy. \emph{A} can send a message to \emph{AppChat}, that messages is saved in the static field \texttt{chatlog}, and then when \emph{B} sends a message to \emph{AppChat} it will receive back the message sent to \emph{AppChat} by \emph{A}. Thus, in an application set containing \emph{A}, \emph{B}, and \emph{AppChat}, we should detect six potential inter-application flows: \emph{A$\rightarrow$AppChat}, \emph{AppChat$\rightarrow$A}, \emph{B$\rightarrow$AppChat}, \emph{AppChat$\rightarrow$B}, \emph{A$\rightarrow$B}, and \emph{B$\rightarrow$A}.
+Static fields present an interesting challenge when trying to detect inter-application flows on Android. Consider a hypothetical application \emph{AppChat} that receives intents, appends the contents of received intents to a static String \texttt{chatlog}, and then sends the contents of \texttt{chatlog} back to the application that originally issued the intent. This \emph{AppChat} application allows two applications \emph{A}, \emph{B} to communicate with each other via proxy. \emph{A} can send a message to \emph{AppChat}, that message is saved in the static field \texttt{chatlog}, and then when \emph{B} sends a message to \emph{AppChat} it will receive back the message sent to \emph{AppChat} by \emph{A}. Thus, in an application set containing \emph{A}, \emph{B}, and \emph{AppChat}, we should detect six potential inter-application flows: \emph{A$\rightarrow$AppChat}, \emph{AppChat$\rightarrow$A}, \emph{B$\rightarrow$AppChat}, \emph{AppChat$\rightarrow$B}, \emph{A$\rightarrow$B}, and \emph{B$\rightarrow$A}.
 
 \begin{figure}
 \begin{framed}
@@ -200,7 +206,7 @@ Static fields present an interesting challenge when trying to detect inter-appli
 \end{framed}
 \end{figure}
 
-Unfortunately, DidFail originally fails to detect some of these potential flows, an issue that has primarily to do with DidFail's use of the FlowDroid tool~\cite{flowdroid}. Recall that FlowDroid takes in an application APK and statically detects potential flows from labeled source and sink functions in that application. In this case, \texttt{getIntent} is considered a source, while \texttt{setResult} is considered a sink. Thus, FlowDroid reports a single flow from \texttt{getIntent} to \texttt{setResult}. Notably, this result is exactly the same as if the static field \texttt{chatlog} had not been used at all (i.e. the received message is simply echoed back back as the reply). Indeed, while FlowDroid does track through static fields, it does not indicate their presence in the results. Thus, DidFail is unaware of the presence of any static fields in an application.
+Unfortunately, DidFail originally fails to detect some of these potential flows, an issue that has primarily to do with DidFail's use of the FlowDroid tool~\cite{flowdroid}. Recall that FlowDroid takes in an application APK and statically detects potential flows from labeled source and sink functions in that application. In this case, \texttt{getIntent} is considered a source, while \texttt{setResult} is considered a sink. Thus, FlowDroid reports a single flow from \texttt{getIntent} to \texttt{setResult}. Notably, this result is exactly the same as if the static field \texttt{chatlog} had not been used at all (i.e., the received message is simply echoed back as the reply). Indeed, while FlowDroid does track through static fields, it does not indicate their presence in the results. Thus, the second phase of DidFail is unaware of the presence of any static fields in an application.
 
 Given only the flow from \texttt{getIntent} to \texttt{setResult}, DidFail will understand that the \emph{AppChat} application takes in input from an application and then replies to that application based on that input. Thus, DidFail will report the following flows: $I_A\rightarrow R(I_A)$ and $I_B\rightarrow R(I_B)$. These account for four of the six of the flows we described above (\emph{A$\rightarrow$AppChat}, \emph{AppChat$\rightarrow$A}, \emph{B$\rightarrow$AppChat}, \emph{AppChat$\rightarrow$B}). Crucially missing here, however, is the flow between applications \emph{A} and \emph{B}, which can communicate via the static field \texttt{chatlog}. 
 
@@ -224,7 +230,7 @@ At a very high level, FlowDroid discovers flows in an application using approxim
 
 This majority of this algorithm is based on the general IFDS Framework for dataflow analysis~\cite{ifds}. The key component of FlowDroid's instantiation are the \emph{flow functions} used to propagate taint information across edges. These flow functions, of which one is selected based on the type of statement in question, dictate when taint information is created, propagated and destroyed. Consider an assignment statement $x = y$. If $y$ is tainted, then we should mark $x$ as tainted and if $y$ is not tainted, then we do not mark $x$ as tainted. 
 
-Note that in the original FlowDroid, since all taint sources and sinks are function calls, an assignment of the form $x = y$ can only propagate taint, not create or destroy it. In order for us to support static fields, however, we need to change this. We modified the flow function for assignment statements to instead have the following logic:
+Note that in the original FlowDroid, since all taint sources and sinks are function calls, an assignment of the form $x = y$ can only propagate taint, not create or destroy it. In order for us to support static fields, however, we need to change this. We modified the flow function for assignment statements of the form $x = y$ to instead have the following logic:
 
 \begin{itemize}
 \item If $y$ is a static field, mark $x$ with taint $T_y$, where $T_y$ is taint originating from static field $y$
@@ -248,11 +254,11 @@ In addition we altered the original code that seeds the IFDS algorithm with init
 \end{framed}
 \end{figure}
 
-Unfortunately, this simple solution does not work in any non-trivial case. Consider the situation where a static variable has been \emph{aliased}, as in Figure~\ref{fig:aliased}. In this case, when we run the flow function on the line $b2.x = source()$, we should treat $b2.x$ as a sink since it is a static field. The term $b2.x$ is not obviously a static field, however. Indeed it is only the fact that $b2.x$ comes after the line $b2 = b$ that causes it to be a static field. What this reveals is that, in the general case, \emph{context is important} for deciding which fields should be treated as static fields. If $b2.x$ occurred after $b2 = new Box()$, then we would not consider $b2.x$ to be a sink on Line 8.
+Unfortunately, this simple solution does not work in any non-trivial case. Consider the situation where a static variable has been \emph{aliased}, as in Figure~\ref{fig:aliased}. In this case, when we run the flow function on the line $\mathit{b2}.x = source()$, we should treat $\mathit{b2}.x$ as a sink since it is a static field. It is not obvious that term $\mathit{b2}.x$ is a static field, however. Indeed it is only the fact that $\mathit{b2}.x$ comes after the line $\mathit{b2} = b$ that causes it to be a static field. What this reveals is that, in the general case, \emph{context is important} for deciding which fields should be treated as static fields. If $\mathit{b2}.x$ occurred after $\mathit{b2} = new Box()$, then we would not consider $\mathit{b2}.x$ to be a sink on Line 8.
 
-Naturally, whether a given term $x.y.z... = t$ is a write to a static field is an undecidable property. We can, however, obtain a conservative guess of which fields are static by creating an additional FlowDroid pass that occurs before the main taint analysis. This pass, which uses the same type of taint analysis, marks all static variables as sources and then propagates taint forward. For the code in Figure~\ref{fig:aliased}, $b$ would be tainted on Line 7, which would cause $b2$ to be tainted. Since $b2$ is tainted, $b2.x$ is also tainted. Once we finish with this initial pass, we record the results of what is tainted in a set.
+Naturally, whether a given term $x.y.z... = t$ is a write to a static field is an undecidable property. We can, however, obtain a conservative guess of which fields are static by creating an additional FlowDroid pass that occurs before the main taint analysis. This pass, which uses the same type of taint analysis, marks all static variables as sources and then propagates taint forward. For the code in Figure~\ref{fig:aliased}, $b$ would be tainted on Line 7, which would cause $\mathit{b2}$ to be tainted. Since $\mathit{b2}$ is tainted, $\mathit{b2}.x$ is also tainted. Once we finish with this initial pass, we record the results of what is tainted in a set.
 
-With this initial pass completed, we now have enough information to solve our aliasing problem. We now no longer need to guess whether $b2.x$ is a static field; we can simply check whether it is in the set of statements marked as tainted in the first pass. With this modification, our flow function for assignment $y = x$ now becomes the following:
+With this initial pass completed, we now have enough information to solve our aliasing problem. We now no longer need to guess whether $\mathit{b2}.x$ is a static field; we can simply check whether it is in the set of statements marked as tainted in the first pass. With this modification, our flow function for assignment $y = x$ now becomes the following:
 
 \begin{itemize}
 \item If $y$ is a static field, mark $x$ with taint $T_x$, where $T_x$ is taint originating from static field $x$
@@ -275,7 +281,7 @@ These additional flows from the Cartesian product calculation are added to the s
 
 Our analysis appeared to work correctly. While our modifications to support flows through static fields worked quite well in most cases, there are still some issues with our solution. With two taint passes instead of one, our required runtime can be as much as double the runtime of the original analysis. 
 
-More critically, the runtime of FlowDroid also scales with the number of sources, which means that adding a new source for every static field read could also ruin performance depending on how frequently static fields are used. In order to evaluate how important this issue is, we tested 100 APKs that, prior to adding this new feature, were successfully analyzed within the allocated time and memory (using virtual machines with 61 GB and FlowDroid analysis memory allowed to take up to 32 GB) \TODO{Waiting for Will Snavely to confirm or give different size for FlowDroid runs}(see Section~\ref{sec:infrastructure}). Unfortunately, the majority (66 out of 100) now timed out or ran out of heap space. It turns out that most applications use static fields quite frequently, particularly when invoking libraries such as Google Ads. For many of these applications, an additional taint analysis for every static field read was prohibitively expensive. In the future, we will increase virtual machine memory size, to see if that enables successful static field taint analysis of more apps. 244 GB-memory virtual machines are available~\footnote{http://aws.amazon.com/ec2/pricing/}, which also have 32 virtual cores. Future work will also develop strategies to reduce the number of reads which get traced through the program. 
+More critically, the runtime of FlowDroid also scales with the number of sources, which means that adding a new source for every static field read could also ruin performance depending on how frequently static fields are used. In order to evaluate how important this issue is, we tested 100 APKs that, prior to adding this new feature, were successfully analyzed within the allocated time and memory (using virtual machines with 61 GB and FlowDroid analysis memory allowed to take up to 32 GB) (see Section~\ref{sec:infrastructure}). \TODO{Waiting for Will Snavely to confirm or give different size for FlowDroid runs. \wek{This was confirmed by Will Snavely's email sent on Mon 1/12/2015 at 12:16.}}  Unfortunately, the majority (66 out of 100) now timed out or ran out of heap space. It turns out that most applications use static fields quite frequently, particularly when invoking libraries such as Google Ads. For many of these applications, an additional taint analysis for every static field read was prohibitively expensive. In the future, we will increase virtual machine memory size, to see if that enables successful static field taint analysis of more apps. Virtual machines with 244~GB of memory are available\footnote{http://aws.amazon.com/ec2/pricing/}, which also have 32 virtual cores. Future work will also develop strategies to reduce the number of reads which get traced through the program. 
 
 As noted earlier, detecting which fields are static is undecidable and our taint-based solution is therefore an overapproximation. Thus, some reported flows to static fields may not be realizable in practice. The solution is not a \emph{strict} overapproximation, however, since there are some cases where FlowDroid itself does not recognize that a flow exists at all. We cannot detect flows that use static fields for legitmate flows missed by FlowDroid. 
 
