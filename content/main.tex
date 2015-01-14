@@ -80,19 +80,20 @@ The previous version of DidFail did not detect dataflows with broadcast intents.
 
 An app can unregister a dynamically registered receiver (and thereby stop it from receiving broadcasts) by calling the \texttt{Context.unregisterReceiver()} method.  DidFail does not consider calls to \texttt{unregisterReceiver()}; if it can be proven that a receiver cannot be live when a tainted broadcast is sent, then DidFail will produce a false alarm.
 
-We made three modifications, as initial enhancements that allow DidFail to analyze broadcast intents to a limited extent. (As mentioned in the Future Work section, a manual kludge is still necessary to handle dynamically registered receivers.) We enhanced the Epicc parser to extract information about broadcast intents, modified FlowDroid to mark broadcast-related functions as sources/sinks, and extended Phase 2 to consume the new output resulting from the previous modifications.
+We made three modifications to allow DidFail to analyze some dataflows that include broadcast intents. (As mentioned in the Future Work section, a manual kludge is still necessary to handle dynamically registered receivers.) We enhanced the Epicc parser to extract information about broadcast intents, modified FlowDroid to mark broadcast-related functions as sources/sinks, and extended Phase 2 to consume the new output resulting from the previous modifications.
 
 \section{Parsing Epicc Output for BroadcastReceivers}
-Dynamically registered receivers show up in the ICC field of Epicc output, rather than being captured as a static manifest field.   This field contains a "Type" key with "android. content. BroadcastReceiver" as a value.  Potential filter properties are given as a list, e.g., the Actions field in the figure below:
+Dynamically registered receivers do not appear in the manifest, but they do appear in the output of Epicc.  A entry starts with the line ``\texttt{Type:\ android.content.BroadcastReceiver}''.  Potential filter properties are given as a list, e.g., the Actions field in Figure~\ref{fig:bcast_epicc_output} below:
 
 \begin{figure}[!h]
 \begin{framed}
 \verbatiminput{epicc_br_out.txt}
 \caption{Example Epicc Output for a BroadcastReceiver}
+\label{fig:bcast_epicc_output}
 \end{framed}
 \end{figure}
 
-We added a separate parser named \emph{parse\_bcast} to address this issue. It is used by DidFail in addition to the previously-existing parser named \emph{epicc\_parser}.
+We added a separate parser function named \emph{parse\_bcast} to address this issue. It is used by DidFail in addition to the previously-existing parser function named \emph{epicc\_parser}.
 
 \section{Marking Broadcast Intents as a Sink/Source in FlowDroid}
 Function signatures related to transmitting and receiving broadcast intents were added to the APK Transformer and FlowDroid, so that they were recognized as sources/sinks. Table~\ref{fnc_bcast} shows the related functions:
@@ -116,8 +117,8 @@ sendStickyOrderedBroadcastAsUser \\
 \end{tabular}
 \end{table}
 
-\section{Trace Broadcast Flows in Taintflow}
-The \emph{taintflows} program (the program responsible for executing Phase 2 of DidFail) was extended to parse the additional sink/sources introduced in the previous sections, and do matching of broadcast intent filters. The logic is the same as with non-broadcast intents.
+\section{Trace Broadcast Flows in Phase 2}
+The \texttt{taintflows.py} program (the program responsible for executing Phase 2 of DidFail) was extended to parse the additional sink/sources introduced in the previous sections, and do matching of broadcast intent filters. The logic is the same as with non-broadcast intents.
 
 \section{Test Applications}
 We wrote three toy apps to test this new feature:
