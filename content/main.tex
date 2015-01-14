@@ -349,10 +349,11 @@ Next, Phase 2 analysis needs some attention.  Some interesting questions include
 \cite{li2015icse} \TODO{Write about IccTA, Adrienne Porter Felt's permissions papers (2), SuSI, others}
 
 \chapter{Conclusions and Future Work}
-In our work, we made improvements to DidFail to help it succeed with more applications and detect more flows. These improvements focused on static fields, BroadcastReceiver components, Service components, and modification to use the latest Soot and FlowDroid versions.
+In our work, we made improvements to DidFail to help it succeed with more applications and detect more flows. 
+These improvements focused on static fields, BroadcastReceiver components, Service components, and update integrations.
  The new setup for instrumented cloud-based testing enables us to take advantage of Amazon's powerful virtual machines and to use virtual machines in parallel for faster test completion. We will continue to use the instrumentation in the new setup, to monitor and optimize DidFail's performance. DidFail was modified to use the most current version of FlowDroid and Soot, and the new version of DidFail was able to successfully process three times as many apps as it was able to previously. The enhancements discussed in this paper moved us significantly closer to the goal of analyzing taint flows through all types of components and shared static fields.
 There are still more dataflows that need to be detected and analyzed, but our work has helped improve DidFail as a practical security tool. 
- With a few more improvements, we hope that DidFail can ultimately be incorporated as part of a review process for vetting applications for malicious behavior.
+ With a few more improvements, we hope that DidFail can ultimately be incorporated as part of a review process for vetting applications for malicious behavior. 
 %As future work, we will ensure that dynamically registered BroadcastReceivers can be automatically analyzed by DidFail.
 %There are still more flow types that need to be detected (such as flows through the file system, arrays of shared static fields, ordered broadcasts, sticky broadcasts, when arrays of intents are passed), 
 
