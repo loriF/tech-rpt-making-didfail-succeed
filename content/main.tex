@@ -335,7 +335,9 @@ We first tried source/sink filtering, using the FlowDroid command-line parameter
 
 Next, we tuned the pathfinding precision by setting the \texttt{aplength} parameter.  This parameter accepts an integer, and sets the FlowDroid \emph{access path} length.  Consider the Java statement \texttt{X.Y.Z = 5}.  The left-hand side of the assignment statement has an access path length of 2.  Through this parameter, one can configure how deeply FlowDroid will search access paths when tracking taint.  With an access path length of 0, all the fields of an object referenced by a variable are conflated together, potentially resulting in many false alarms.  In previous test runs, we had set the path length to 1, so for this tuned run we tried setting the path length to 0.  Six of the twelve remaining APKs now succeeded. 
 
-The final, rather drastic option is the \texttt{nopaths} parameter, which causes FlowDroid to invest no effort in constructing accurate paths.  Rather, it will simply report source/sink pairs.  Obviously, this is bound to produce many false positives.  Nonetheless, this option was required for the remaining six APKs to make it through FlowDroid without timing out.
+The final, rather drastic option is the \texttt{nopaths} parameter, which causes FlowDroid to invest no effort in constructing accurate paths.  
+%{Rather, it will simply report source/sink pairs.  Obviously, this is bound to produce many false positives.} <== This is not true.  The nopaths options doesn't decrease either precision or soundnress, it just provides less information.
+This option was required for the remaining six APKs to make it through FlowDroid without timing out.
 
 \section{Conclusions and Future Work on Infrastructure Improvements}
 With this work, we substantially improved the success rate of Phase 1 analysis, and investigated the performance of FlowDroid.  We found that vertical scaling is not a viable solution, in many cases, to FlowDroid timeouts.  Moreover, we found that some APKs will not yield to (timely) FlowDroid analysis without very liberal compromises on path precision.
@@ -358,6 +360,8 @@ There are still more dataflows that need to be detected and analyzed, but our wo
  With a few more improvements, we hope that DidFail can ultimately be incorporated as part of a review process for vetting applications for malicious behavior. 
 %As future work, we will ensure that dynamically registered BroadcastReceivers can be automatically analyzed by DidFail.
 %There are still more flow types that need to be detected (such as flows through the file system, arrays of shared static fields, ordered broadcasts, sticky broadcasts, when arrays of intents are passed), 
+
+\TODO{New version of FlowDroid already handles dynamically registered BroadcastReceivers?}
 
 
 %\bibliographystyle{IEEEtran}
