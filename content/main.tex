@@ -57,10 +57,10 @@ Unfortunately, the tool is still limited in the types of flows it can analyze. I
 A Service is an application component that is meant to run without direct user interaction (e.g., provide some functionality while the app is not in the foreground). A Service can be instantiated by passing an intent corresponding to a Service's intent filter or the name of the class instance, and making a call to the \emph{startService} method. We added new functionality to DidFail to handle some dataflows involving Services.  
 
 \section{General Modifications}
-\subsubsection{Recognizing New Intent Sinks}
+\subsection{Recognizing New Intent Sinks}
 DidFail's \emph{APK Transformer} identifies intent sinks in an Android app by matching method signatures in the app with known intent sink method signatures. If the signatures match, an intent ID is generated for the intent sink method. Method signatures for the non-Activity intent sinks were added in order to track intent sinks for BroadcastReceivers and Services. Similarly, FlowDroid had to be modified slightly to recognize the new intent sinks. 
 
-\subsubsection{Matching Flows by Component Types}
+\subsection{Matching Flows by Component Types}
 DidFail initially only handled flows involving activities. Extending DidFail to also support BroadcastReceiver and Service components required a slight modification in how the sources and sinks were matched. Certain methods indicate the type of a receiving component, and need to be taken into account when matching receiving components and sending components $(e.g.,\  \emph{startService} \rightarrow service, \emph{startActivity} \rightarrow activity).$ By recording the sink component type, we enabled the matching process to create appropriate flows.
 
 \section{Initial Test Results}
