@@ -180,6 +180,14 @@ FUNCTION {emphasize}
   if$
 }
 
+% Function 'enquote' added by weklieber 2015-01-20
+FUNCTION {enquote}
+{ duplicate$ empty$
+    { pop$ "" }
+    { "``" swap$ * "''" * }
+  if$
+}
+
 INTEGERS { nameptr namesleft numnames }
 
 FUNCTION {format.names}
@@ -281,6 +289,10 @@ FUNCTION {format.date}
 
 FUNCTION {format.btitle}
 { title emphasize
+}
+
+FUNCTION {format.atitle}
+{ title enquote
 }
 
 FUNCTION {tie.or.space.connect}
@@ -539,7 +551,7 @@ FUNCTION {article}
 { output.bibitem
   format.authors "author" output.check
   new.block
-  format.title "title" output.check
+  format.atitle "title" output.check
   new.block
   crossref missing$
     { journal emphasize "journal" output.check
@@ -639,7 +651,7 @@ FUNCTION {incollection}
 { output.bibitem
   format.authors "author" output.check
   new.block
-  format.title "title" output.check
+  format.atitle "title" output.check
   new.block
   crossref missing$
     { format.in.ed.booktitle "booktitle" output.check
@@ -665,7 +677,7 @@ FUNCTION {inproceedings}
 { output.bibitem
   format.authors "author" output.check
   new.block
-  format.title "title" output.check
+  format.atitle "title" output.check
   new.block
   crossref missing$
     { format.in.ed.booktitle "booktitle" output.check
@@ -814,7 +826,7 @@ FUNCTION {techreport}
 { output.bibitem
   format.authors "author" output.check
   new.block
-  format.title "title" output.check
+  format.atitle "title" output.check
   new.block
   format.tr.number output.nonnull
   institution "institution" output.check
@@ -829,7 +841,7 @@ FUNCTION {unpublished}
 { output.bibitem
   format.authors "author" output.check
   new.block
-  format.title "title" output.check
+  format.atitle "title" output.check
   new.block
   note "note" output.check
   format.date output
