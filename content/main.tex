@@ -125,7 +125,7 @@ sendStickyOrderedBroadcastAsUser \\
 The \texttt{taintflows.py} program (the program responsible for executing Phase 2 of DidFail) was extended to parse the additional sink/sources introduced in the previous sections, and do matching of broadcast intent filters. The logic is the same as with non-broadcast intents.
 
 \section{Test Applications}
-We wrote three toy apps to test this new feature:
+We wrote five apps to test this new feature:
 
 \begin{itemize}
 \item{} \emph{BroadcastTx} has the READ\_PHONE\_STATE permission and sends the device ID via a broadcast intent with an Action filter. See Figure~\ref{fig:broadcastleak} for the code that leaks the device ID.
@@ -133,7 +133,12 @@ We wrote three toy apps to test this new feature:
 \item{} \emph{BroadcastRx\_Static} has the SEND\_SMS permission and receives broadcast intents via a staticly-declared receiver with the same Action filter as declared in the manifest file.  See Figure~\ref{fig:broadcastmanifest} for the manifest, and Figure~\ref{fig:broadcaststaticrecvr} for the receiver class.
 
 \item{} \emph{BroadcastRx\_Dyn} has the ACCESS\_FINE\_LOCATION permission and receives a broadcast intent via a dynamically registered receiver with the same filter.  See Figure~\ref{fig:broadcastregister} for the receiver registration, and Figure~\ref{fig:broadcastdynrecvr} for the receiver class. 
+
+\item{} \emph{BadBroadcastRxDyn} is the same as \emph{BroadcastRx\_Dyn}, except it has different calls to the methods unregisterReceiver and registerReceiver.
+
+\item{} \emph{KludgeBroadcastRxDyn} is the same as \emph{BadBroadcastRx\_Dyn}, except it has a filter declaration in the manifest as well as a standard dynamic registration of the BroadcastReceiver in the component’s Java code. See Figure~\ref{fig:broadcastDynManifestKludge} for the filter declaration code.
 \end{itemize} 
+
 
 \begin{figure}[!h]
 \begin{framed}
@@ -156,6 +161,14 @@ We wrote three toy apps to test this new feature:
 \lstinputlisting[language=Java]{java/broadcastonreceive.java}
 \caption{Code for a BroadcastReceiver that sends text messages}
 \label{fig:broadcaststaticrecvr}
+\end{framed}
+\end{figure}
+
+\begin{figure}[!h]
+\begin{framed}
+\lstinputlisting[language=Java]{java/broadcastDynManifestKludge.java}
+\caption{Manifest Code of \emph{KludgeBroadcastRxDyn}, with Manually-Added Filter for Dynamically Registered BroadcastReceiver}
+\label{fig:broadcastDynManifestKludge}
 \end{framed}
 \end{figure}
 
