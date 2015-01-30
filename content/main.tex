@@ -195,6 +195,21 @@ Our modified FlowDroid identified the expected sources/sinks in the toy applicat
 
 Phase 2 analysis correctly identified two inter-application flows: from the transmitter to the statically registered BroadcastReceiver, and from the transmitter to the dynamically registered BroadcastReceiver.
 
+Since FlowDroid was unable to statically detect flows in BroadcastRx\_Dyn, we tested this app on a physical phone, alongside BroadcastTx. Figure~\ref{fig:logcat-BcastDyn} shows the log messages (from \ttt{adb logcat}) when running BroadcastTx and BroadcastRx\_Dyn.
+
+\begin{figure}[!h]
+\begin{framed}
+\begin{alltt}
+D/BcastTx (28361): OnClick
+D/BcastTx (28361): DeviceID: 35███████████03
+D/BcastTx (28361): Intent has been sent.
+D/BcastRxDyn(28399): 35███████████03
+\end{alltt}
+\caption{Output of \ttt{adb logcat}}
+\label{fig:logcat-BcastDyn}
+\end{framed}
+\end{figure}
+
 \section{Future Work}
 Currently, for a dynamically registered BroadcastReceiver to be handled by DidFail, a dummy static declaration of the BroadcastReceiver must be added to the manifest file so that FlowDroid can appropriately analyze it. This dummy declaration could be added after analysis of the code shows a BroadcastReceiver is dynamically registered. This problem with analyzing dynamically registered BroadcastReceivers is a known issue of FlowDroid, and we didn't find an easy way to modify FlowDroid to fix this. As future work, we can further investigate how to modify FlowDroid to correct this issue, or alternatively, we can modify the APK Transformer to automatically add this dummy declaration into the app's manifest file.
 
