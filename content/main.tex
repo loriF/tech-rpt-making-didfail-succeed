@@ -5,13 +5,6 @@
 
 \nonfrenchspacing
 
-% paper title
-% can use linebreaks \\ within to get better formatting as desired
-%%%%\title{Making DidFail Succeed \\ 
-%%%%Enhancing the CERT Static Taintflow Analyzer for Android App Sets}
-
-% make the title area
-%%%%\maketitle
 \chapter{Introduction}
 \label{sec:intro}
 \textit{DidFail} (Droid Intent Data Flow Analysis for Information Leakage) is
@@ -26,9 +19,10 @@ One of the core assumptions at the heart of the Android permission system is tha
 
 Consider the case where the user installs an application for recording audio notes. Because the user is recording sensitive information, he or she verifies that the application has no network access. The same user then also installs a weather application, which uses the internet but has access to no sensitive content. Considering the applications in isolation, the user has made sensible decisions: the application which has internet access does not have access to sensitive information and vice versa. If, however, these applications can communicate (either intentionally or unintentionally), then the user's information may still be at risk. If the audio recording application can send messages to the weather app which are then sent over the internet, an outside attacker could gain access to all audio recorded by the device.
 
-As this example demonstrates, the Android permission system alone is insufficient for reasoning about scenarios where information flow between applications circumvents intended permission limitiations. \emph{DidFail}~\cite{didfail} is a tool for detecting such flows. Given a set up of Android APKs, DidFail uses static analysis to detect cases where sensitive information may be leaked from one application to another. While DidFail is a useful tool, it currently falls short in several scenarios. In its previous release, DidFail only tracked flows between Activities via intents. Other types of dataflows, such as those through static fields or between an Activity and a BroadcastReceiver, were previously missed. Through our work, we were able to expand DidFail's capabilities to work with more applications and handle more types of flows (with a few bumps along the way, and some still left for future work). In Sections III-VI, we detail the four features of DidFail we focused on improving.
+As this example demonstrates, the Android permission system alone is insufficient for reasoning about scenarios where information flow between applications circumvents intended permission limitiations. \emph{DidFail}~\cite{didfail} is a tool for detecting such flows. Given a set up of Android APKs, DidFail uses static analysis to detect cases where sensitive information may be leaked from one application to another. While DidFail is a useful tool, it currently falls short in several scenarios. In its previous release, DidFail only tracked flows between Activities via intents. Other types of dataflows, such as those through static fields or between an Activity and a BroadcastReceiver, were previously missed. Through our work, we were able to expand DidFail's capabilities to work with more applications and handle more types of flows (with a few bumps along the way, and some still left for future work). In Sections \ref{chap:services} through \ref{chap:infrastructure}, we detail the four features of DidFail we focused on improving.
 
-The DidFail analyzer (source code and binaries), previous DidFail versions, and papers about DidFail are available at: \url{http://www.cert.org/secure-coding/tools/didfail.cfm}.  The version of DidFail and the test apps described in this report are also directly available at: \TODO{Get URL for direct access and put here, and also populate code, install instructions, and use instructions.}
+The main DidFail webpage is \url{http://www.cert.org/secure-coding/tools/didfail.cfm}.  The version of DidFail and the test apps described in this report are also directly available at: 
+\\ \url{https://www.cs.cmu.edu/~wklieber/didfail/install-latest.html}.
 
 \chapter{DidFail}
 
@@ -52,8 +46,8 @@ In Phase 2, DidFail combines the information about these two applications. Reali
 Cases like this one are where DidFail shines. 
 Unfortunately, the tool is still limited in the types of flows it can analyze. In our work, we enhanced DidFail to handle more applications and more types of flows.
 
-
-\chapter{Flows Involving Services}
+\phantomsection
+\chapter{Flows Involving Services} \label{chap:services}
 A Service is an application component that is meant to run without direct user interaction (e.g., provide some functionality while the app is not in the foreground). A Service can be instantiated by passing an intent corresponding to a Service's intent filter or the name of the class instance, and making a call to the \emph{startService} method. We added new functionality to DidFail to handle some dataflows involving Services.  
 
 \section{General Modifications}
@@ -75,7 +69,8 @@ We tested the analyzer on a single app set, with two apps that we created. \emph
 
 Phase 1 and Phase 2 analysis results were as expected, tracing the tainted location information through the Activity and Service components, as well as identifying the sources and sinks. We also did a preliminary test run of 100 APKs for Phase 1 using the extended APK Transformer, Epicc and FlowDroid. We observed that intent sinks such as \texttt{startService} and \texttt{bindService} were identified. Further testing still needs to done to verify that the modifications improve Phase 2 results.
 
-\chapter{Flows Involving BroadcastReceivers}
+\phantomsection
+\chapter{Flows Involving BroadcastReceivers} \label{chap:broadcast_receivers}
 The previous version of DidFail did not detect dataflows with broadcast intents. To extend DidFail, we considered aspects of broadcast dataflows. First, broadcast intents are received in a particular way: the app contains a class that extends \texttt{android.content.BroadcastReceiver}, which implements the \texttt{onReceive} method. Second, an application can declare the broadcasts it wishes to receive in two ways: statically in the manifest, or dynamically with the \texttt{registerReceiver()} method. Third, there are different types of broadcasts: normal broadcasts with unordered receivers, ordered broadcasts, and sticky broadcasts that remain active after the initial broadcast distribution is completed.
 
 An app can unregister a dynamically registered receiver (and thereby stop it from receiving broadcasts) by calling the \texttt{Context.unregisterReceiver()} method.  DidFail does not consider calls to \texttt{unregisterReceiver()}; if it can be proven that a receiver cannot be live when a tainted broadcast is sent, then DidFail will produce a false alarm.
@@ -96,7 +91,7 @@ Dynamically registered receivers do not appear in the manifest, but they do appe
 We added a separate parser function named \emph{parse\_bcast} to address this issue. It is used by DidFail in addition to the previously-existing parser function named \emph{epicc\_parser}.
 
 \section{Marking Broadcast Intents as a Sink/Source in FlowDroid}
-Function signatures related to transmitting and receiving broadcast intents were added to the APK Transformer and FlowDroid, so that they were recognized as sources/sinks. Table~\ref{fnc_bcast} shows the related functions:
+Function signatures related to transmitting and receiving broadcast intents were added to the APK Transformer and FlowDroid, so that they were recognized as sources/sinks. Table~\ref{fnc_bcast} shows the related functions.
 \begin{table}[!h]
 \renewcommand{\arraystretch}{1.3}
 \caption{Functions Related to Broadcasting Intents}
@@ -104,6 +99,7 @@ Function signatures related to transmitting and receiving broadcast intents were
 \centering
 \rule{0.55\textwidth}{0.75pt}
 \\
+\tt
 \begin{tabular}{l}
 %\hline
 onReceive \\
@@ -128,15 +124,13 @@ The \texttt{taintflows.py} program (the program responsible for executing Phase 
 We wrote five apps to test this new feature:
 
 \begin{itemize}
-\item{} \emph{BroadcastTx} has the READ\_PHONE\_STATE permission and sends the device ID via a broadcast intent with an Action filter. See Figure~\ref{fig:broadcastleak} for the code that leaks the device ID.
+\item{} \emph{BroadcastTx} has the READ\_PHONE\_STATE permission and sends the device ID via a broadcast intent with an action filter. See Figure~\ref{fig:broadcastleak} for the code that leaks the device ID.
 
-\item{} \emph{BroadcastRx\_Static} has the SEND\_SMS permission and receives broadcast intents via a staticly-declared receiver with the same Action filter as declared in the manifest file.  See Figure~\ref{fig:broadcastmanifest} for the manifest, and Figure~\ref{fig:broadcaststaticrecvr} for the receiver class.
+\item{} \emph{BroadcastRx\_Static} has the SEND\_SMS permission and receives broadcast intents via a statically declared receiver with the same action filter as declared in the manifest file.  See Figure~\ref{fig:broadcastmanifest} for the manifest, and Figure~\ref{fig:broadcaststaticrecvr} for the receiver class.
 
-\item{} \emph{BroadcastRx\_Dyn} has the ACCESS\_FINE\_LOCATION permission and receives a broadcast intent via a dynamically registered receiver with the same filter.  See Figure~\ref{fig:broadcastregister} for the receiver registration, and Figure~\ref{fig:broadcastdynrecvr} for the receiver class. 
+\item{} \emph{BroadcastRx\_Dyn} has the ACCESS\_FINE\_LOCATION permission and receives a broadcast intent via a dynamically registered receiver with the same filter.  See Figure~\ref{fig:broadcastregister} for the receiver registration, and see Figure~\ref{fig:broadcastdynrecvr} for the receiver class. 
 
-\item{} \emph{BadBroadcastRxDyn} is the same as \emph{BroadcastRx\_Dyn}, except it has different calls to the methods unregisterReceiver and registerReceiver.
-
-\item{} \emph{KludgeBroadcastRxDyn} is the same as \emph{BadBroadcastRx\_Dyn}, except it has a filter declaration in the manifest as well as a standard dynamic registration of the BroadcastReceiver in the component’s Java code. See Figure~\ref{fig:broadcastDynManifestKludge} for the filter declaration code.
+\item{} \emph{KludgeBroadcastRxDyn} is the same as \emph{BroadcastRx\_Dyn}, except it has a filter declaration in the manifest (see Figure~\ref{fig:broadcastDynManifestKludge}) as well as a standard dynamic registration of the BroadcastReceiver in the component’s Java code. 
 \end{itemize} 
 
 
@@ -205,7 +199,7 @@ D/BcastTx (28361): DeviceID: 35███████████03
 D/BcastTx (28361): Intent has been sent.
 D/BcastRxDyn(28399): 35███████████03
 \end{alltt}
-\caption{Output of \ttt{adb logcat}}
+\caption[Output of \ttt{adb logcat}]{Output of \ttt{adb logcat}.  The device ID has been partially redacted.}
 \label{fig:logcat-BcastDyn}
 \end{framed}
 \end{figure}
@@ -215,7 +209,8 @@ Currently, for a dynamically registered BroadcastReceiver to be handled by DidFa
 
 
 \newpage
-\chapter{Flows Involving Static Fields}
+\phantomsection
+\chapter{Flows Involving Static Fields} \label{chap:static_fields}
 
 There are many ways that two Android applications could potentially communicate with each other. The most direct way is for applications to send and receive intents, which are specifically designed for inter-application communication. Other, more subtle communication mechanisms can also be used to share information between applications, including cooperative use of shared state, or any of a number of covert channels (power usage, timing, etc.). Since DidFail aims to detect how applications can communicate to share permissions, it needs to understand as many of these types of communication channels as possible.
 
@@ -302,7 +297,7 @@ With Phase I of DidFail now producing information about flows through static fie
 
 When we run modified FlowDroid on $AppChat$, we obtain the flows $getIntent\rightarrow log$, $log\rightarrow setResult$, and $getIntent\rightarrow setResult$, as mentioned earlier. Since $log$ is a static field that could persist across the handling of multiple intents, we need to give it special treatment. We want it to be the case that \emph{every application} that reads from $log$ is tainted by \emph{every application} that writes to that static field. This effectively amounts to taking the Cartesian product of all reads and writes to the field. We find that application $A$ and $B$ both write to and read from $log$, so taking the Cartesian product we get: $(A, A), (A, B), (B, A), (B, B)$. This result means that in addition to the flow where $A$ and $B$ interact with $AppChat$ in isolation, we must now consider the case where input from $A$ flows to $B$ and vice versa.
 
-These additional flows from the Cartesian product calculation are added to the set of flows before DidFail performs its usual flow matching process (described in detail in the DidFail paper).
+These additional flows from the Cartesian product calculation are added to the set of flows before DidFail performs its usual flow matching process (which is described in detail in \ref{didfail}). \TODO{It's not before matching!}
 
 \section{Drawbacks, Limitations, and Future Work}
 
@@ -315,7 +310,8 @@ As noted earlier, detecting which fields are static is undecidable and our taint
 Finally, our current implementation does not support static fields involving arrays. This should be straightforward to do in future work, however.
 
 
-\chapter{Infrastructure Improvements}
+\phantomsection
+\chapter{Infrastructure Improvements} \label{chap:infrastructure}
 \label{sec:infrastructure}
 The original DidFail implementation experienced a high failure rate in the Phase 1 analysis.  Recall that Phase 1 analysis is run on each APK separately, to find tainted flows therein.  This first step of this analysis involves transforming the input APK, instrumenting the callsite of various intent-sending methods with a unique ID.  This transformed APK is then processed by FlowDroid and Epicc.  With this improvement, we sought to increase the success rate of APK processing in Phase 1.
 
