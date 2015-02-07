@@ -373,14 +373,17 @@ It was clear that the analysis itself needed tuning.  Recall that FlowDroid seek
 
 Nonetheless, we were interested to determine how much tuning FlowDroid required in order to process the remaining 21 APKs.  We provisioned the same machine as before (32 GB of memory, 4 cores), and maintained the same timeout (15 minutes).  
 
-We first tried source/sink filtering, using the FlowDroid command-line parameters \texttt{nocallbacks} and \texttt{layoutmode}.  The first disables the emulation of Android callbacks (due to button clicks, GPS location changes, etc.), while the second ignores Android GUI components, like input fields, as dataflow sources.  With this change, 9 out of the 21 APKs now were successfully processed by FlowDroid. 
 
-Next, we tuned the pathfinding precision by setting the \texttt{aplength} parameter.  This parameter accepts an integer, and sets the FlowDroid \emph{access path} length.  Consider the Java statement \texttt{X.Y.Z = 5}.  The left-hand side of the assignment statement has an access path length of 2.  Through this parameter, one can configure how deeply FlowDroid will search access paths when tracking taint.  With an access path length of 0, all the fields of an object referenced by a variable are conflated together, potentially resulting in many false alarms.  In previous test runs, we had set the path length to 1, so for this tuned run we tried setting the path length to 0.  Six of the twelve remaining APKs now succeeded. 
 
-The final, rather drastic option is the \texttt{nopaths} parameter, which causes FlowDroid to invest no effort in constructing accurate paths.  
-%{Rather, it will simply report source/sink pairs.  Obviously, this is bound to produce many false positives.} <== This is not true.  The nopaths options doesn't decrease either precision or soundnress, it just provides less information.
-\TODO{Confirm what the \ttt{nopaths} option actually does.}
-This option was required for the remaining six APKs to make it through FlowDroid without timing out.
+Source/sink filtering resulted in 9 out of the 21 APKs getting successfully processed by FlowDroid. Source/sink filtering uses the FlowDroid command-line parameters \ttt{nocallbacks} and \ttt{layoutmode}. The first disables the emulation of Android callbacks (due to button clicks, GPS location changes, etc.), while the second ignores Android GUI components, like input fields, as dataflow sources.
+
+Tuning the pathfinding precision by setting the \ttt{aplength} parameter resulted in six of the twelve remaining APKs succeeding. The \ttt{aplength} parameter accepts an integer and sets the FlowDroid \itc{access path} length. Consider the Java statement \ttt{X.Y.Z = 5}. The left-hand side of the assignment statement has an access path length of 2. Using this parameter, one can configure how deeply FlowDroid will search access paths when tracking taint. With an access path length of 0, all the fields of an object referenced by a variable are conflated, potentially resulting in many false alarms.
+
+Using the \ttt{nopaths} parameter was required for the remaining six APKs to make it through FlowDroid without timing out. The \ttt{nopaths} parameter causes FlowDroid to invest no effort in constructing accurate paths. Rather, it will simply report source/sink pairs. 
+
+Additional options to improve performance are described on the FlowDroid webpage\footnote{\url{https://github.com/secure-software-engineering/soot-infoflow-android/wiki}}. For future testing, we will compare these options in terms of precision versus computation requirements, as we did for the work discussed in this report.
+
+
 
 \section{Conclusions and Future Work on Infrastructure Improvements}
 With this work, we substantially improved the success rate of Phase 1 analysis, and investigated the performance of FlowDroid.  We found that vertical scaling is not a viable solution, in many cases, to FlowDroid timeouts.  Moreover, we found that some APKs will not yield to (timely) FlowDroid analysis without very liberal compromises on path precision.
