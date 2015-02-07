@@ -299,6 +299,24 @@ When we run modified FlowDroid on $AppChat$, we obtain the flows $getIntent\righ
 
 These additional flows from the Cartesian product calculation are added to the set of flows before DidFail performs its usual flow matching process (which is described in detail in \ref{didfail}). \TODO{It's not before matching!}
 
+\section{Results}
+Our enhanced DidFail identified the expected flows from sources to sinks in a set of three toy apps we developed, which provide the taint flow described in sections 5.1 and 5.4: \emph{AppChat}, \emph{SendSMS2}, and \emph{LogWrite}. \emph{SendSMS2} calls source method \texttt{getLine1Number()},  which gets the MSISDN for a GSM phone.  \emph{SendSMS2} sends data it receives from \emph{AppChat} into an SMS-sending sink call. \emph{LogWrite} calls source method \texttt{getLastKnownLocation(java.lang.String)}, and sends data it receives from \emph{AppChat} into a sink method call to \texttt{Log.w}. DidFail finds that both sources can reach both sinks, via  data flows that involve a static field in \emph{AppChat}. 
+
+Figure~\ref{fig:staticAnalysisProblem} shows an example static field setup where FlowDroid fails, and so our modifications also fail to trace taint through the static field.  The taint flow analysis fails to detect flows, for flows involving fields of static classes that another class gets and sets.
+
+\begin{figure}
+\begin{framed}
+\begin{center}
+\begin{minipage}{0.85\textwidth}
+\lstinputlisting[language=Java, numbers=left]{java/staticFieldProb.java}
+\end{minipage}
+\end{center}
+\caption{Field of Static Class, Other Class Gets and Sets Field}
+\label{fig:staticAnalysisProblem}
+\end{framed}
+\end{figure}
+
+
 \section{Drawbacks, Limitations, and Future Work}
 
 Our analysis appeared to work correctly. While our modifications to support flows through static fields worked quite well in most cases, there are still some issues with our solution. With two taint passes instead of one, our required runtime can be as much as double the runtime of the original analysis. 
