@@ -302,6 +302,7 @@ These additional flows from the Cartesian product calculation are added to the s
 \section{Results}
 Our enhanced DidFail identified the expected flows from sources to sinks in a set of three toy apps we developed, which provide the taint flow described in sections 5.1 and 5.4: \emph{AppChat}, \emph{SendSMS2}, and \emph{LogWrite}. \emph{SendSMS2} calls source method \texttt{getLine1Number()},  which gets the MSISDN for a GSM phone.  \emph{SendSMS2} sends data it receives from \emph{AppChat} into an SMS-sending sink call. \emph{LogWrite} calls source method \texttt{getLastKnownLocation(java.lang.String)}, and sends data it receives from \emph{AppChat} into a sink method call to \texttt{Log.w}. DidFail finds that both sources can reach both sinks, via  data flows that involve a static field in \emph{AppChat}. 
 
+\TODO{remove figure and text about diff class access problem}
 Figure~\ref{fig:staticAnalysisProblem} shows an example static field setup where FlowDroid fails to identify any flow through the static field, and so our modifications also fail to trace taint through it.  The taint flow analysis fails to detect flows, for flows involving fields of static classes that another class gets and sets.
 
 \begin{figure}
