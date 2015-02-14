@@ -394,7 +394,7 @@ Next, Phase 2 analysis needs some attention.  Some interesting questions include
 
 \chapter{Related Work}
 Felt et\ al.~\cite{felt2011android} found that about one-third of Android apps (of the 940 they tested) asked for more privileges than actually used. They found evidence that one cause of over-privilege is developer confusion, in part due to insufficient Android API documentation. Malicious apps can use permission re-delegation attack methods \cite{felt2011permission}, which when successful take advantage of a higher-privilege app performing a privileged task for an application without permissions. The Epicc \cite{epicc} tool precisely analyzes inter-app communication in Android.  By looking at intents sent and intent filters (both those declared in the manifest file and those dynamically registered in the case of BroadcastReceivers), Epicc can detect certain vulnerabilities due to app communication, such as activity hijacking. Although it examines vulnerabilities due to intents, the Epicc analysis alone does not trace and identify data flows between sources and sinks. 
-TaintDroid~\cite{enck2010taintdroid} does realtime taint tracking to dynamically detect data leaks\TODO{``, including flows that traverse multiple apps''?}.
+TaintDroid~\cite{enck2010taintdroid} does realtime taint tracking to dynamically detect data leaks, including flows that traverse multiple apps.
 
 The most similar work to DidFail is IccTA~\cite{li2014know}\footnote{In addition to the arXiv preprint, a paper has been accepted at ICSE 2015 and will be published later this year.}, which was developed at roughly the same time as DidFail.  Like DidFail, IccTA statically analyzes app sets to detect flows of sensitive data. IccTA uses a single-phase approach that runs the full analysis monolithically, as opposed to DidFail's compositional two-phase approach with fast install-time analysis. IccTA is more precise than the current version of DidFail; because of its greater context sensitivity, it does less overestimation of tainted data reaching sinks.
 
@@ -407,7 +407,6 @@ There are still more dataflows that need to be detected and analyzed, but our wo
 %As future work, we will ensure that dynamically registered BroadcastReceivers can be automatically analyzed by DidFail.
 %There are still more flow types that need to be detected (such as flows through the file system, arrays of shared static fields, ordered broadcasts, sticky broadcasts, when arrays of intents are passed), 
 
-\TODO{New version of FlowDroid already handles dynamically registered BroadcastReceivers?}
 
 
 \bibliographystyle{IEEEtran}
