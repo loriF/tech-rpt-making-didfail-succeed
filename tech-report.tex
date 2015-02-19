@@ -189,25 +189,11 @@
 %        Editable Front Matter Pages
 % ******************************************
 {\fontfamily{cmr}\selectfont
-%	% Document About the TN/TR Series Page
-%	\include{content/abouttntr}
-%	\newpage\null\newpage % make blank page
-%
-%	% Document Foreword
-%	\include{content/foreword}
-%	\newpage\null\newpage % make blank page
-%
-%	% Document Preface
-%	\include{content/preface}
-%	\newpage\null\newpage % make blank page
 
 	% Document Acknowledgments
 	\include{content/acknowledgments}
 	\newpage\null\newpage % make blank page
 
-	% Document Executive Summary
-	%\include{content/execsummary}
-	%\newpage\null\newpage % make blank page
 
 	% Document Abstract
 	\include{content/abstract}
@@ -221,28 +207,8 @@
 \pagenumbering{arabic}
 {\fontfamily{cmr}\selectfont
 	\subimport{content/}{content/main.tex}
-%	\include{content/introduction}
-%	\include{content/ch01}
-%	\include{content/ch02}
-%	\include{content/ch03}
-%	\include{content/conclusion}
 }
 
-%% ******************************************
-%%                 Back Matter
-%% ******************************************
-%% Document Executive Summary
-%{\fontfamily{cmr}\selectfont
-%	\include{content/feedbackrqst}
-%}
-%
-%% ******************************************
-%%                 Appendices
-%% ******************************************
-%\appendix % INSTRUCTS LATEX TO CHANGE FROM NUMBERED "CHAPTER" HEADINGS TO LETTERED "APPENDIX" HEADINGS
-%{\fontfamily{cmr}\selectfont
-%	\include{content/appa}
-%}
 
 % ******************************************
 %          References / Bibliography
