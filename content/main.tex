@@ -7,7 +7,7 @@
 
 \chapter{Introduction}
 \label{sec:intro}
-/textit{DidFail} (Droid Intent Data Flow Analysis for Information Leakage) is
+\textit{DidFail} (Droid Intent Data Flow Analysis for Information Leakage) is
 a static analyzer, developed by the CERT Division of the Software Engineering Institute (SEI) at Carnegie Mellon University, which detects possible flows of sensitive
 information in sets of Android apps. 
 This technical report describes enhancements recently made to the analyzer
@@ -56,7 +56,7 @@ Unfortunately, the tool is still limited in the types of flows it can analyze. I
 
 \phantomsection
 \chapter{Flows Involving Services} \label{chap:services}
-A Service is an application component that is meant to run without direct user interaction (e.g., provide some functionality while the app is not in the foreground). A Service can be instantiated by passing an intent corresponding to a Service's intent filter, or the name of the class instance, and making a call to the \emph{startService} method. We added new functionality to DidFail to handle some dataflows involving Services.  
+A Service is an application component that is meant to run without direct user interaction (e.g., provide some functionality while the app is not in the foreground). A Service can be instantiated by passing an intent corresponding to a Service's intent filter, or the name of the class instance, and making a call to the \texttt{startService} method. We added new functionality to DidFail to handle some dataflows involving Services.  
 
 \section{General Modifications}
 The following are the general modifications we made to the DidFail tool.
@@ -74,7 +74,7 @@ Using two apps we created, we tested the analyzer on a single app set. \emph{Sen
 \begin{figure}[h]
 	\centering
 %	\includegraphics[width=0.35\textwidth]{serviceapp.pdf}
-	\includegraphics[width=0.35\textwidth]{serviceapps_v2.png}
+	\includegraphics[width=0.50\textwidth]{serviceapps_v2.png}
 	\caption{Initial App Set for Service Components}
 	\label{fig:servicetest1}
 \end{figure}
@@ -100,7 +100,7 @@ Dynamically registered receivers do not appear in the manifest, but they do appe
 \end{framed}
 \end{figure}
 
-We added a separate parser function named \emph{parse\_bcast} to address this issue. It is used by DidFail in addition to the previously-existing parser function named \emph{epicc\_parser}.
+We added a separate parser function named \texttt{parse\_bcast} to address this issue. It is used by DidFail in addition to the previously-existing parser function named \texttt{epicc\_parser}.
 
 \section{Marking Broadcast Intents as a Sink/Source in FlowDroid}
 Function signatures related to transmitting and receiving broadcast intents were added to the APK Transformer and FlowDroid so that they were recognized as sources or sinks. Table~\ref{fnc_bcast} shows the related functions.
@@ -201,9 +201,9 @@ Our modified FlowDroid identified the expected flows from sources to sinks in th
 
 Phase 2 analysis correctly identified two inter-application flows: (1) from the transmitter to the statically registered BroadcastReceiver and (2) from the transmitter to the dynamically registered BroadcastReceiver.
 
-DidFail did not detect the dataflows from sources to sinks in the other app, BroadcastRx Dyn, for reasons described in Section 4.6.
+DidFail did not detect the dataflows from sources to sinks in the other app, \textit{BroadcastRx\_Dyn}, for reasons described in Section 4.6.
 
-Because FlowDroid was unable to statically detect flows in BroadcastRx\_Dyn, we tested this app on a physical phone, alongside BroadcastTx. Figure~\ref{fig:logcat-BcastDyn} shows the log messages (from \ttt{adb logcat}) when running BroadcastTx and BroadcastRx\_Dyn.
+Because FlowDroid was unable to statically detect flows in \textit{BroadcastRx\_Dyn}, we tested this app on a physical phone, alongside \textit{BroadcastTx}. Figure~\ref{fig:logcat-BcastDyn} shows the log messages (from \ttt{adb logcat}) when running \textit{BroadcastTx} and \textit{BroadcastRx\_Dyn}.
 
 \begin{figure}[!h]
 \begin{framed}
@@ -219,9 +219,9 @@ D/BcastRxDyn(28399): 35███████████03
 \end{figure}
 
 \section{Dynamically Registered BroadcastReceivers}
-Currently, for a dynamically registered BroadcastReceiver to be handled by DidFail, a dummy static declaration of the BroadcastReceiver must be added to the manifest file so that FlowDroid can appropriately analyze it. This dummy declaration can be added after analysis of the code shows a BroadcastReceiver is dynamically registered, as successfully demonstrated in the test app KludgeBroadcastRxDyn.
+Currently, for a dynamically registered BroadcastReceiver to be handled by DidFail, a dummy static declaration of the BroadcastReceiver must be added to the manifest file so that FlowDroid can appropriately analyze it. This dummy declaration can be added after analysis of the code shows a BroadcastReceiver is dynamically registered, as successfully demonstrated in the test app \textit{KludgeBroadcastRxDyn}.
 
-Some problems with analyzing dynamically registered BroadcastReceivers have been fixed in the latest version of FlowDroid’s development branch. The develop branch of the standard FlowDroid distribution has newly added handling of some dataflows involving dynamically declared BroadcastReceivers. Their DroidBench test app distribution now includes two apps (\textit{BroadcastReceiverLifecycle2} and \textit{BroadcastTaintAndLeak1}) which have dynamically declared BroadcastReceivers with taint flows that FlowDroid detects, and it detects taint flow in our test app \textit{KludgeBroadcastRxDyn}. However, at the time of writing, the taint flow in our test app BroadcastRx\_Dyn is not detected by FlowDroid.
+Some problems with analyzing dynamically registered BroadcastReceivers have been fixed in the latest version of FlowDroid’s development branch. The develop branch of the standard FlowDroid distribution has newly added handling of some dataflows involving dynamically declared BroadcastReceivers. Their DroidBench test app distribution now includes two apps (\textit{BroadcastReceiverLifecycle2} and \textit{BroadcastTaintAndLeak1}) which have dynamically declared BroadcastReceivers with taint flows that FlowDroid detects, and it detects taint flow in our test app \textit{KludgeBroadcastRxDyn}. However, at the time of writing, the taint flow in our test app \textit{BroadcastRx\_Dyn} is not detected by FlowDroid.
 
 \section{Future Work}
 We plan to modify DidFail to handle dynamically declared BroadcastReceivers in a fully automated way by integrating it with a recent version of FlowDroid and working to fix remaining un-analyzed taint flows. We plan to investigate modification FlowDroid to analyze the flows, or alternatively, the modification of the APK Transformer to automatically add this dummy declaration into the app’s manifest file. We also plan to add analysis specific to ordered and sticky broadcasts.
