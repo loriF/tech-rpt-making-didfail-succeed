@@ -8,20 +8,20 @@
 \chapter{Introduction}
 \label{sec:intro}
 \textit{DidFail} (Droid Intent Data Flow Analysis for Information Leakage) is
-a static analyzer, developed by the CERT Division of the Software Engineering Institute (SEI) at Carnegie Mellon University, which detects possible flows of sensitive
+a static analyzer, developed by the CERT Division of the Software Engineering Institute (SEI) at Carnegie Mellon University. DidFail detects possible flows of sensitive
 information in sets of Android apps. 
 This technical report describes enhancements recently made to the analyzer
 itself, a new testing framework, newly developed test apps, and test results. 
 
 The permission system is an important feature of Android security. By placing adjustable limitations on what resources applications can use, Android allows users a large degree of control over how much trust should be given to specific applications. This system allows untrusted applications to coexist in an environment with sensitive information, such as the user's location, contacts, and other personal details.
 
-One of the core assumptions of the Android permission system is that an application that lacks permission to access a resource cannot obtain access to that resource. This assumption is enforced with code that checks that an application has permission for a resource when it requests it from the system. Once the application has access to the resource, however, it can use that resource as it sees fit. This ability to freely use the resource can include sharing private information with other applications or executing actions on behalf of other applications. Indeed, while the Android permission system is well-suited for controlling access for applications in isolation, it can fail to protect resources on the device.
+One of the core assumptions of the Android permission system is that an application that lacks permission to access a resource cannot obtain access to that resource. This assumption is enforced with code that checks that an application has permission for a resource when it requests it from the system. Once the application has access to the resource, however, it can use that resource as it sees fit. This ability to freely use the resource can include sharing private information with other applications or executing actions on behalf of other applications. Indeed, while the Android permission system is well suited for controlling access for applications in isolation, it can fail to protect resources on the device.
 
 Consider the case where a user installs an application for recording audio notes. Because the user is recording sensitive information, he or she verifies that the application has no network access. The same user then installs a weather application that uses the internet but has access to no sensitive content. Considering the applications in isolation, the user has made sensible decisions; the application that has internet access does not have access to sensitive information and vice versa. If, however, these applications can communicate (either intentionally or unintentionally), then the user's information may be at risk. If the audio recording application can send messages to the weather app that are then sent over the internet, an outside attacker could gain access to audio recorded by the device.
 
 Considering the Android permission system alone is insufficient for reasoning about scenarios where information flow between applications circumvents intended permission limitations. \emph{DidFail} is a tool for detecting such flows~\cite{didfail}. DidFail statically analyzes sets of Android application packages (APKs) to detect cases where sensitive information may be leaked from one application to another. While DidFail is a useful tool, it previously fell short in several scenarios. In its previous release, DidFail tracked flows between Activities only by intents. Other types of dataflows, such as those through static fields or between an Activity and a BroadcastReceiver, were missed. With the work detailed in this report, we expanded DidFail's capabilities to work with more applications and handle more types of flows.\footnote{Some flow types are yet to be implemented.} In sections \ref{chap:services} through \ref{chap:infrastructure}, we detail four improved DidFail features.
 
-The main DidFail webpage is \url{http://www.cert.org/secure-coding/tools/didfail.cfm}.  The version of DidFail and the test apps described in this report are also directly available at: 
+The main DidFail webpage is \url{http://www.cert.org/secure-coding/tools/didfail.cfm}.  The version of DidFail and the test apps described in this report are also directly available on the Carnegie Mellon University website: 
 \\ \url{https://www.cs.cmu.edu/~wklieber/didfail/install-latest.html}.
 
 \chapter{DidFail}
@@ -37,7 +37,7 @@ In Phase 1 (Figure~\ref{fig:overview_phase1}), each APK is fed into the \emph{AP
 	\label{fig:overview_phase1}
 \end{figure}
 
-The FlowDroid tool performs static taint tracking in Android applications. Given a set of method signatures that correspond to taint sources and sinks, FlowDroid conservatively propagates taint from sources in the application, reporting all flows from sensitive sources to sinks. Sources include function calls that access sensitive information in Android, such as \texttt{getLatitude()} or \texttt{getSimSerialNumber()}. Sinks include function calls that exfiltrate information, such as \texttt{Log.d} and \texttt{FileOutputStream.write}. In addition, reads from received intents are treated as sources, and writes to intents are treated as sinks. Output from FlowDroid might identify, for example, that an application reads contact information from some source, then sends it as part of an intent, or that an application reads information from an intent, then sends it as an SMS message.
+The FlowDroid tool performs static taint tracking in Android applications. Given a set of method signatures that correspond to taint sources and sinks, FlowDroid conservatively propagates taint from sources in the application, reporting all flows from sensitive sources to sinks. Sources include function calls that access sensitive information in Android, such as \texttt{getLatitude()} or \texttt{getSimSerialNumber()}. Sinks include function calls that exfiltrate information, such as \texttt{Log.d} and \texttt{FileOutputStream.write}. In addition, reads from received intents are treated as sources, and writes to intents are treated as sinks. Output from FlowDroid might identify, for example, that an application reads contact information from some source, then sends it as part of an intent, or that an application reads information from an intent, then sends it as a Short Message Service (SMS) message.
 
 Epicc~\cite{epicc} performs static analysis to map out inter-component communication within an Android application. While this analysis is mainly used to understand how parts of a single application work together, it can also discover what portions of the application are externally accessible via either explicit or implicit intents. While FlowDroid is useful for understanding flows within an application, Epicc reveals the interfaces that can be used for an application to communicate with other applications.
 
@@ -49,17 +49,15 @@ Similarly, Phase 1 would reveal that the weather app handles intents, reads info
 
 In Phase 2, DidFail combines the information about these two applications. DidFail analyzes dataflows between apps that can occur through intents, eventually discovering and reporting that sensitive audio information is sent over the internet.
 
-Unfortunately, the tool was limited in the types of flows it could analyze. In our work, we enhanced DidFail to handle more applications and more types of flows.
-
 Cases like this one are where DidFail shines. 
 Unfortunately, the tool is still limited in the types of flows it can analyze. In our work, we enhanced DidFail to handle more applications and more types of flows.
-
+\newpage
 \phantomsection
 \chapter{Flows Involving Services} \label{chap:services}
 A Service is an application component that is meant to run without direct user interaction (e.g., provide some functionality while the app is not in the foreground). A Service can be instantiated by passing an intent corresponding to a Service's intent filter, or the name of the class instance, and making a call to the \texttt{startService} method. We added new functionality to DidFail to handle some dataflows involving Services.  
 
 \section{General Modifications}
-The following are the general modifications we made to the DidFail tool.
+The following sections describe the general modifications we made to the DidFail tool.
 \subsection{Recognizing New Intent Sinks}
 DidFail's \emph{APK Transformer} identifies intent sinks in an Android app by matching method signatures in the app with known intent sink method signatures. If the signatures match, an intent ID is generated for the intent sink method. Method signatures for the non-Activity intent sinks were added to track intent sinks for BroadcastReceivers and Services. Similarly, FlowDroid had to be modified slightly to recognize the new intent sinks. 
 
@@ -69,7 +67,7 @@ DidFail initially handled only flows involving activities. Extending DidFail to 
 \section{Initial Test Results}
 Using two apps we created, we tested the analyzer on a single app set. \emph{SendApp}'s main Activity component obtains location information by calling \texttt{getLocation()} and stores the information in an intent set with a custom action string matching \emph{SendAppService}'s intent filter.
 
-(See Figure~\ref{fig:servicetest1}.) The intent is passed to \texttt{startService}, received by \emph{SendApp}'s Service component, and similarly sent to the \emph{ReceiveAppService} component. \emph{ReceiveAppService} passes the tainted information to \emph{ReceiveApp}'s Activity component by calling \texttt{startActivity}.
+As illustrated in Figure~\ref{fig:servicetest1}, the intent is passed to \texttt{startService}, received by \emph{SendApp}'s Service component, and similarly sent to the \emph{ReceiveAppService} component. \emph{ReceiveAppService} passes the tainted information to \emph{ReceiveApp}'s Activity component by calling \texttt{startActivity}.
 
 \begin{figure}[h]
 	\centering
@@ -81,16 +79,17 @@ Using two apps we created, we tested the analyzer on a single app set. \emph{Sen
 
 Phase 1 and Phase 2 analysis results were as we expected, tracing the tainted location information through the Activity and Service components as well as identifying the sources and sinks. We also ran a preliminary test of 100 APKs for Phase 1 using the extended APK Transformer, Epicc, and FlowDroid. We observed that intent sinks, such as \texttt{startService} and \texttt{bindService}, were identified. Further testing still needs to be done to verify that the modifications improve Phase 2 results.
 
+\newpage
 \phantomsection
 \chapter{Flows Involving BroadcastReceivers} \label{chap:broadcast_receivers}
 Previous versions of DidFail failed to detect dataflows that involve broadcast intents. Broadcast intents are received in a particular way; the app contains a class that extends the class \texttt{android.content.BroadcastReceiver}, which implements the \texttt{onReceive} method. An application can declare the broadcasts it wishes to receive statically in the manifest or dynamically with the \texttt{registerReceiver()} method. There are different types of broadcasts: normal broadcasts with unordered receivers, ordered broadcasts, and sticky broadcasts that remain active after the initial broadcast distribution is completed.
 
 An app can unregister a dynamically registered receiver (and thereby stop it from receiving broadcasts) by calling the \texttt{Context.unregisterReceiver()} method.  DidFail does not consider calls to \texttt{unregisterReceiver()}; if it can be proven that a receiver cannot be live when a tainted broadcast is sent, then DidFail produces a false alarm.
 
-We made three modifications to allow DidFail to analyze dataflows that include broadcast intents. As mentioned Section 4.6, a manual adjustment is necessary to handle dynamically registered receivers, and we do not yet analyze for the dataflow of sticky broadcasts and ordered broadcasts and ordered broadcasts. We enhanced the Epicc parser to extract information about broadcast intents, modified FlowDroid to mark broadcast-related functions as sources or sinks, and extended Phase 2 to consume the new output resulting from the previous modifications.
+We made three modifications to allow DidFail to analyze dataflows that include broadcast intents. As mentioned in Section 4.6, a manual adjustment is necessary to handle dynamically registered receivers, and we do not yet analyze for the dataflow of sticky broadcasts and ordered broadcasts. We enhanced the Epicc parser to extract information about broadcast intents, modified FlowDroid to mark broadcast-related functions as sources or sinks, and extended Phase 2 to consume the new output resulting from the previous modifications.
 
 \section{Parsing Epicc Output for BroadcastReceivers}
-Dynamically registered receivers do not appear in the manifest, but they do appear in the output of Epicc.  An entry starts with the line ``\texttt{Type:\ android.content.BroadcastReceiver}''.  Potential filter properties are given as a list (for example, the Actions field in Figure~\ref{fig:bcast_epicc_output}).
+Dynamically registered receivers do not appear in the manifest, but they do appear in the output of Epicc.  An entry starts with the line ``\texttt{Type:\ android.content.BroadcastReceiver}."  Potential filter properties are given as a list (for example, the Actions field in Figure~\ref{fig:bcast_epicc_output}).
 
 \begin{figure}[!h]
 \begin{framed}
@@ -100,7 +99,7 @@ Dynamically registered receivers do not appear in the manifest, but they do appe
 \end{framed}
 \end{figure}
 
-We added a separate parser function named \texttt{parse\_bcast} to address this issue. It is used by DidFail in addition to the previously-existing parser function named \texttt{epicc\_parser}.
+We added a separate parser function named \texttt{parse\_bcast} to address this issue. It is used by DidFail in addition to the previously existing parser function named \texttt{epicc\_parser}.
 
 \section{Marking Broadcast Intents as a Sink/Source in FlowDroid}
 Function signatures related to transmitting and receiving broadcast intents were added to the APK Transformer and FlowDroid so that they were recognized as sources or sinks. Table~\ref{fnc_bcast} shows the related functions.
@@ -173,7 +172,7 @@ We wrote four apps to test this new feature:
 \begin{figure}[!h]
 \begin{framed}
 \lstinputlisting[language=Java]{java/broadcastDynManifestKludge.java}
-\caption{Manifest Code of \emph{KludgeBroadcastRxDyn}, with Manually-Added Filter for Dynamically Registered BroadcastReceiver}
+\caption{Manifest Code of \emph{KludgeBroadcastRxDyn}, with Manually Added Filter for Dynamically Registered BroadcastReceiver}
 \label{fig:broadcastDynManifestKludge}
 \end{framed}
 \end{figure}
@@ -197,7 +196,7 @@ We wrote four apps to test this new feature:
 
 \section{Results}
 
-Our modified FlowDroid identified the expected flows from sources to sinks in three of the four toy applications: \textit{BroadcastTx}, \textit{BroadcastRx Static}, and \textit{KludgeBroadcastRxDyn}. For these apps first, it identified the leakage of the device ID through a broadcast intent in Figure~\ref{fig:broadcastleak} as a tainted source. The BroadcastReceivers in Figure~\ref{fig:broadcaststaticrecvr} and Figure~\ref{fig:broadcastdynrecvr} were identified as sinks.
+Our modified FlowDroid identified the expected flows from sources to sinks in three of the four toy applications: \textit{BroadcastTx}, \textit{BroadcastRx Static}, and \textit{KludgeBroadcastRxDyn}. For these apps, it identified the leakage of the device ID through a broadcast intent in Figure~\ref{fig:broadcastleak} as a tainted source. The BroadcastReceivers in Figure~\ref{fig:broadcaststaticrecvr} and Figure~\ref{fig:broadcastdynrecvr} were identified as sinks.
 
 Phase 2 analysis correctly identified two inter-application flows: (1) from the transmitter to the statically registered BroadcastReceiver and (2) from the transmitter to the dynamically registered BroadcastReceiver.
 
@@ -213,18 +212,18 @@ D/BcastTx (28361): DeviceID: 35███████████03
 D/BcastTx (28361): Intent has been sent.
 D/BcastRxDyn(28399): 35███████████03
 \end{alltt}
-\caption[Output of \ttt{adb logcat}]{Output of \ttt{adb logcat}.  The Device ID Has Been Partially Redacted.}
+\caption[Output of \ttt{adb logcat}]{Output of \ttt{adb logcat} (The Device ID Has Been Partially Redacted.)}
 \label{fig:logcat-BcastDyn}
 \end{framed}
 \end{figure}
 
 \section{Dynamically Registered BroadcastReceivers}
-Currently, for a dynamically registered BroadcastReceiver to be handled by DidFail, a dummy static declaration of the BroadcastReceiver must be added to the manifest file so that FlowDroid can appropriately analyze it. This dummy declaration can be added after analysis of the code shows a BroadcastReceiver is dynamically registered, as successfully demonstrated in the test app \textit{KludgeBroadcastRxDyn}\footnote{This and the other test apps we developed for this project are available for free download at http://www.cs.cmu.edu/~wklieber/didfail/test-apps-dec2014/}.
+Currently, for a dynamically registered BroadcastReceiver to be handled by DidFail, a dummy static declaration of the BroadcastReceiver must be added to the manifest file so that FlowDroid can appropriately analyze it. This dummy declaration can be added after analysis of the code shows a BroadcastReceiver is dynamically registered, as successfully demonstrated in the test app \textit{KludgeBroadcastRxDyn}.\footnote{This and the other test apps we developed for this project are available for free download at http://www.cs.cmu.edu/~wklieber/didfail/test-apps-dec2014/}
 
-Some problems with analyzing dynamically registered BroadcastReceivers have been fixed in the latest version of FlowDroid’s development branch. The develop branch of the standard FlowDroid distribution\footnote{https://github.com/secure-software-engineering/soot-infoflow-android} has newly added handling of some dataflows involving dynamically declared BroadcastReceivers. Their DroidBench\footnote{https://github.com/secure-software-engineering/DroidBench/tree/develop} test app distribution now includes two apps (\textit{BroadcastReceiverLifecycle2} and \textit{BroadcastTaintAndLeak1}) which have dynamically declared BroadcastReceivers with taint flows that FlowDroid detects, and it detects taint flow in our test app \textit{KludgeBroadcastRxDyn}. However, at the time of writing, the taint flow in our test app \textit{BroadcastRx\_Dyn} is not detected by FlowDroid.
+Some problems with analyzing dynamically registered BroadcastReceivers have been fixed in the latest version of FlowDroid’s development branch. The develop branch of the standard FlowDroid distribution\footnote{https://github.com/secure-software-engineering/soot-infoflow-android} has newly added handling of some dataflows involving dynamically declared BroadcastReceivers. Their DroidBench\footnote{https://github.com/secure-software-engineering/DroidBench/tree/develop} test app distribution now includes two apps (\textit{BroadcastReceiverLifecycle2} and \textit{BroadcastTaintAndLeak1}), which have dynamically declared BroadcastReceivers with taint flows that FlowDroid detects, and it detects taint flow in our test app \textit{KludgeBroadcastRxDyn}. However, at the time of this writing, the taint flow in our test app \textit{BroadcastRx\_Dyn} is not detected by FlowDroid.
 
 \section{Future Work}
-We plan to modify DidFail to handle dynamically declared BroadcastReceivers in a fully automated way by integrating it with a recent version of FlowDroid and working to fix remaining un-analyzed taint flows. We plan to investigate modification FlowDroid to analyze the flows, or alternatively, the modification of the APK Transformer to automatically add this dummy declaration into the app’s manifest file. We also plan to add analysis specific to ordered and sticky broadcasts.
+We plan to modify DidFail to handle dynamically declared BroadcastReceivers in a fully automated way by integrating it with a recent version of FlowDroid and working to fix remaining un-analyzed taint flows. We plan to investigate modifying FlowDroid to analyze the flows, or alternatively, modifying the APK Transformer to automatically add this dummy declaration into the app’s manifest file. We also plan to add analysis specific to ordered and sticky broadcasts.
 
 
 \newpage
@@ -237,7 +236,7 @@ There are many ways that Android apps could communicate. The most direct way is 
 
 While DidFail does not detect many of these communication channels, support was successfully added for detecting some flows through \emph{static shared fields}. A static field in Java (denoted by using the \texttt{static} keyword) shares its value among all instances of the class. The declaration of static fields establishes state at the class level rather than at the instance level.
 
-Static fields present an interesting challenge when trying to detect inter-application flows on Android. Consider a hypothetical application, \emph{AppChat}, that receives intents, appends the contents of received intents to a static String \texttt{holdover}, and then returns the contents of \texttt{holdover} to the application that originally issued the intent. This \emph{AppChat} application allows two applications ()\emph{A} and \emph{B}) to communicate with each other via proxy. \emph{A} can send a message to \emph{AppChat}; that message is saved in the static field \texttt{chatlog}. When \emph{B} sends a message to \emph{AppChat}, it will receive back the message sent to \emph{AppChat} by \emph{A}. Consequently, in the application set, containing \emph{A}, \emph{B}, and \emph{AppChat}, there exist six potential inter-application flows: \emph{A$\rightarrow$AppChat}, \emph{AppChat$\rightarrow$A}, \emph{B$\rightarrow$AppChat}, \emph{AppChat$\rightarrow$B}, \emph{A$\rightarrow$B}, and \emph{B$\rightarrow$A}.
+Static fields present an interesting challenge when trying to detect inter-application flows on Android. Consider a hypothetical application, \emph{AppChat}, that receives intents, appends the contents of received intents to a static String \texttt{holdover}, and then returns the contents of \texttt{holdover} to the application that originally issued the intent. This \emph{AppChat} application allows two applications (\emph{A} and \emph{B}) to communicate with each other via proxy. \emph{A} can send a message to \emph{AppChat}; that message is saved in the static field \texttt{chatlog}. When \emph{B} sends a message to \emph{AppChat}, it will receive back the message sent to \emph{AppChat} by \emph{A}. Consequently, in the application set containing \emph{A}, \emph{B}, and \emph{AppChat}, there exist six potential inter-application flows: \emph{A$\rightarrow$AppChat}, \emph{AppChat$\rightarrow$A}, \emph{B$\rightarrow$AppChat}, \emph{AppChat$\rightarrow$B}, \emph{A$\rightarrow$B}, and \emph{B$\rightarrow$A}.
 
 \begin{figure}
 \begin{framed}
@@ -253,7 +252,7 @@ Given only the flow from \texttt{getIntent} to \texttt{setResult}, DidFail under
 
 \section{Adding Support for Static Field Flows}
 
-For DidFail to analyze flows involving static fields, FlowDroid needed to be modified to report about how static fields are used in an application. Given that static fields provide persistent state that can be both read from and written to, it makes sense to treat static fields as both a source \emph{and} a sink. In other words, if sensitive information flows from a source to a static field, we should report the flow, and if content flows from a static field to a sink, we should report that flow as well.
+For DidFail to analyze flows involving static fields, FlowDroid needed to be modified to report about how static fields are used in an application. Given that static fields provide a persistent state that can be both read from and written to, it makes sense to treat static fields as both a source \emph{and} a sink. In other words, if sensitive information flows from a source to a static field, we should report the flow, and if content flows from a static field to a sink, we should report that flow as well.
 
 There were a number of key challenges we encountered while trying to add this feature to FlowDroid. First and foremost, FlowDroid handles only sources and sinks that occur as function calls. Consequently, while it is easy to mark a function as a new taint source, there is no support for adding more general types of sources, such as those associated with a specific variable. This limitation meant that we needed to modify the actual code associated with FlowDroid's taint analysis to achieve our goals.
 
@@ -269,7 +268,7 @@ At a high level, FlowDroid discovers flows in an application using the following
 \item Use the per-statement taint information to compute the source-to-sink flows through the application.
 \end{enumerate}
 
-The majority of this algorithm is based on the general IFDS Framework for dataflow analysis~\cite{ifds}. The key component of FlowDroid's instantiation are the \emph{flow functions} used to propagate taint information across edges. These flow functions, one of which is selected based on the type of statement in question, dictate when taint information is created, propagated and destroyed. Consider an assignment statement $x = y$. If $y$ is tainted, then we should mark $x$ as tainted, and if $y$ is not tainted, then we do not mark $x$ as tainted. 
+The majority of this algorithm is based on the general IFDS Framework for dataflow analysis~\cite{ifds}. The key component of FlowDroid's instantiation are the \emph{flow functions} used to propagate taint information across edges. These flow functions, one of which is selected based on the type of statement in question, dictate when taint information is created, propagated, and destroyed. Consider an assignment statement $x = y$. If $y$ is tainted, then we should mark $x$ as tainted, and if $y$ is not tainted, then we do not mark $x$ as tainted. 
 
 In the original FlowDroid, because all taint sources and sinks are function calls, an assignment of the form $x = y$ can only propagate taint, not create or destroy it. To support static fields, however, this approach must be changed. We modified the flow function for assignment statements of the form $x = y$ to instead have the following logic:
 
@@ -299,7 +298,7 @@ Unfortunately, this simple solution does not work in a non-trivial case. Conside
 
 Naturally, whether a given term $x.y.z... = t$ is a write to a static field is an undecidable property. We can, however, obtain a conservative guess of which fields are static by creating an additional FlowDroid pass that occurs before the main taint analysis. This pass, which uses the same type of taint analysis, marks all static variables as sources and then propagates taint forward. For the code in Figure~\ref{fig:aliased}, $b$ would be tainted on Line 7, which would cause $\mathit{b2}$ to be tainted. Because $\mathit{b2}$ is tainted, $\mathit{b2}.x$ is also tainted. Once we finish with this initial pass, we record the results of what is tainted in a set.
 
-With this initial pass completed, we now have enough information to solve our aliasing problem. We now no longer need to guess whether $\mathit{b2}.x$ is a static field; we can simply check whether it is in the set of statements marked as tainted in the first pass. With this modification, our flow function for assignment $y = x$ now becomes the following:
+With this initial pass completed, we now have enough information to solve our aliasing problem. We no longer need to guess whether $\mathit{b2}.x$ is a static field; we can simply check whether it is in the set of statements marked as tainted in the first pass. With this modification, our flow function for assignment $y = x$ now becomes the following:
 
 \begin{itemize}
 \item If $y$ is a static field, mark $x$ with taint $T_x$, where $T_x$ is taint originating from static field $x$.
@@ -319,7 +318,7 @@ When we run modified FlowDroid on $AppChat$, we obtain the flows $getIntent\righ
 These additional flows from the Cartesian product calculation are added to the set of flows after DidFail generates the Phase II flow equations. (Generating the Phase II flow equations is described in detail in Section 3.3 of \cite{didfail}). 
 
 \section{Results} \label{sec:static-results}
-Our enhanced DidFail identified the expected flows from sources to sinks in a set of three toy apps we developed, which provide the taint flow described in sections 5.1 and 5.4: \emph{AppChat}, \emph{SendSMS2}, and \emph{LogWrite}. \emph{SendSMS2} calls source method \texttt{getLine1Number()},  which gets the MSISDN for a GSM phone.  \emph{SendSMS2} sends data it receives from \emph{AppChat} into an SMS-sending sink call. \emph{LogWrite} calls source method \texttt{getLastKnownLocation(java.lang.String)}, and sends data it receives from \emph{AppChat} into a sink method call to \texttt{Log.w}. DidFail finds that both sources can reach both sinks, via  data flows that involve a static field in \emph{AppChat}. 
+Our enhanced DidFail identified the expected flows from sources to sinks in a set of three toy apps we developed, which provided the taint flow described in sections 5.1 and 5.4: \emph{AppChat}, \emph{SendSMS2}, and \emph{LogWrite}. \emph{SendSMS2} calls source method \texttt{getLine1Number()},  which gets the MSISDN for a GSM phone.  \emph{SendSMS2} sends data it receives from \emph{AppChat} into an SMS-sending sink call. \emph{LogWrite} calls source method \texttt{getLastKnownLocation(java.lang.String)} and sends data it receives from \emph{AppChat} into a sink method call to \texttt{Log.w}. DidFail finds that both sources can reach both sinks via  data flows that involve a static field in \emph{AppChat}. 
 
 Figure~\ref{fig:staticAnalysisProblem} shows an example static field setup where FlowDroid fails to identify any flow through the static field, and so our modifications also fail to trace taint through it.  The taint flow analysis fails to detect flows, for flows involving fields of static classes that another class gets and sets.
 
@@ -362,7 +361,7 @@ Our first step was to port the DidFail changes to the latest versions of Soot an
 The next step was to create an instrumented harness for running the various components of Phase 1.  In particular, we were interested in gathering data about FlowDroid, since in previous test runs many APKs timed out during FlowDroid processing.  A small test harness was developed in Python for running various Phase 1 components (the APK Transformer, Epicc, FlowDroid, etc.) with various parameters and with a specified timeout.  This harness also measured system metrics (e.g., memory usage, CPU usage) while the DidFail analyses were running.  
 
 \section{Initial Testing}
-A selection of 90 APKs was chosen randomly from a large set, with the goal of running them through both the old and new versions of DidFail to evaluate the effectiveness of our changes.  A machine was provisioned from Amazon EC2 to run the test, because it was difficult to secure time on a machine locally with enough resources.  This machine was equipped with 4 cores and 32 GB of memory.  FlowDroid was allocated 16 GB of memory (through the heap space parameter to the JVM) and a 15-minute timeout.  APKs were processed by the APK Transformer before being sent to FlowDroid.  The graph in Figure~\ref{fig:initial_phase1} summarizes the results of this test.
+A selection of 90 APKs was chosen randomly from a large set, with the goal of running them through both the old and new versions of DidFail to evaluate the effectiveness of our changes.  A machine was provisioned from Amazon EC2 to run the test because it was difficult to secure time on a machine locally with enough resources.  This machine was equipped with 4 cores and 32 GB of memory.  FlowDroid was allocated 16 GB of memory (through the heap space parameter to the JVM) and a 15-minute timeout.  APKs were processed by the APK Transformer before being sent to FlowDroid.  The graph in Figure~\ref{fig:initial_phase1} summarizes the results of this test.
 
 \begin{figure}[h]
 	\centering
@@ -384,7 +383,7 @@ The first thing we tried was vertical scaling.  We provisioned a much larger mac
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.50\textwidth]{flowdroid_perf.pdf}
-	\caption{Results of the FlowDroid Test Run on a High Performance Machine}
+	\caption{Results of the FlowDroid Test Run on a High-Performance Machine}
 	\label{fig:high_phase1}
 \end{figure}
 
@@ -398,7 +397,7 @@ Tuning the pathfinding precision by setting the \ttt{aplength} parameter resulte
 
 Using the \ttt{nopaths} parameter was required for the remaining six APKs to make it through FlowDroid without timing out. The \ttt{nopaths} parameter causes FlowDroid to invest no effort in constructing accurate paths. Rather, it will simply report source/sink pairs. 
 
-Additional options to improve performance are described on the FlowDroid webpage\footnote{\url{https://github.com/secure-software-engineering/soot-infoflow-android/wiki}}. For future testing, we will compare these options in terms of precision versus computation requirements, as we did for the work discussed in this report.
+Additional options to improve performance are described on the FlowDroid webpage.\footnote{\url{https://github.com/secure-software-engineering/soot-infoflow-android/wiki}} For future testing, we will compare these options in terms of precision versus computation requirements, as we did for the work discussed in this report.
 
 
 \section{Conclusions and Future Work on Infrastructure Improvements}
@@ -412,7 +411,7 @@ Next, Phase 2 analysis needs some attention. There are some interesting question
 Felt et\ al.~\cite{felt2011android} found that about one-third of Android apps (of the 940 they tested) asked for more privileges than they actually used. They also found evidence that one cause of over-privilege is developer confusion, in part due to insufficient Android API documentation. Malicious apps can use permission re-delegation attack methods \cite{felt2011permission} that, when successful, take advantage of a higher-privilege app performing a privileged task for an application without permissions. The Epicc \cite{epicc} tool precisely analyzes inter-app communication in Android.  By looking at intents sent and intent filters (both declared in the manifest file and  dynamically registered in the case of BroadcastReceivers), Epicc can detect vulnerabilities due to app communication, such as activity hijacking. Although it examines vulnerabilities due to intents, the Epicc analysis alone does not trace and identify data flows between sources and sinks. 
 TaintDroid~\cite{enck2010taintdroid} does real-time taint tracking to dynamically detect data leaks, including flows that traverse multiple apps.
 
-The most similar work to DidFail is IccTA~\cite{li2014know}\footnote{In addition to the arXiv preprint, a paper has been accepted at ICSE 2015 and will be published later this year.}, which was developed at roughly the same time as DidFail.  Like DidFail, IccTA statically analyzes app sets to detect flows of sensitive data. IccTA uses a single-phase approach that runs the full analysis monolithically, as opposed to DidFail's compositional two-phase approach with fast install-time analysis. IccTA is more precise than the current version of DidFail. Because of its greater context sensitivity, it does less overestimation of tainted data reaching sinks.
+The most similar work to DidFail is IccTA~\cite{li2014know},\footnote{In addition to the arXiv preprint, a paper has been accepted at ICSE 2015 and will be published later this year.} which was developed at roughly the same time as DidFail. Like DidFail, IccTA statically analyzes app sets to detect flows of sensitive data. IccTA uses a single-phase approach that runs the full analysis monolithically, as opposed to DidFail's compositional two-phase approach with fast install-time analysis. IccTA is more precise than the current version of DidFail. Because of its greater context sensitivity, it does less overestimation of tainted data reaching sinks.
 
 \chapter{Conclusions and Future Work}
 Improvements to DidFail helped it succeed with more applications and detect more flows. 
