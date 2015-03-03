@@ -3,6 +3,14 @@
 \NeedsTeXFormat{LaTeX2e}
 \documentclass[10pt]{report}
 \usepackage[utf8]{inputenc}
+\usepackage{etoolbox}
+
+\makeatletter
+\patchcmd{\@chapter}{%
+        \addtocontents{lof}{\protect\addvspace{10\p@}}%
+        \addtocontents{lot}{\protect\addvspace{10\p@}}%
+}{}{}{\message{Failed to patch \string\@chapter}}
+\makeatother
 
 % Use the SEI Style (Listing of options here)
 \usepackage[tr]{SEIreport} % Disables draft message in header of TR.
@@ -39,7 +47,6 @@
 \usepackage{longtable} % allows tables to break across multiple pages
 \usepackage{makeidx} % create an index
 \usepackage{framed}
-\usepackage{etoolbox}
 \epstopdfsetup{update} % only regenerate pdf files when eps file has changed
 
 \usepackage{cite}
@@ -113,11 +120,11 @@
 
 % Define color styles for the document links
 \hypersetup{
-    colorlinks,
+    colorlinks=false,
     citecolor=black,
     filecolor=black,
     linkcolor=black,
-    urlcolor=hrrefcolor
+    urlcolor=black
 }
 
 % Set proper header height for the font size

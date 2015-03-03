@@ -22,7 +22,7 @@ Consider the case where a user installs an application for recording audio notes
 Considering the Android permission system alone is insufficient for reasoning about scenarios where information flow between applications circumvents intended permission limitations. \emph{DidFail} is a tool for detecting such flows~\cite{didfail}. DidFail statically analyzes sets of Android application packages (APKs) to detect cases where sensitive information may be leaked from one application to another. While DidFail is a useful tool, it previously fell short in several scenarios. In its previous release, DidFail tracked flows between Activities only by intents. Other types of dataflows, such as those through static fields or between an Activity and a BroadcastReceiver, were missed. With the work detailed in this report, we expanded DidFail's capabilities to work with more applications and handle more types of flows.\footnote{Some flow types are yet to be implemented.} In sections \ref{chap:services} through \ref{chap:infrastructure}, we detail four improved DidFail features.
 
 The main DidFail webpage is \url{http://www.cert.org/secure-coding/tools/didfail.cfm}.  The version of DidFail and the test apps described in this report are also directly available on the Carnegie Mellon University website: 
-\\ \url{https://www.cs.cmu.edu/~wklieber/didfail/install-latest.html}.
+\\ \ttt{\url{https://www.cs.cmu.edu/~wklieber/didfail/install-latest.html}}.
 
 \chapter{DidFail}
 
@@ -172,7 +172,7 @@ We wrote four apps to test this new feature:
 \begin{figure}[!h]
 \begin{framed}
 \lstinputlisting[language=Java]{java/broadcastDynManifestKludge.java}
-\caption{Manifest Code of \emph{KludgeBroadcastRxDyn}, with Manually Added Filter for Dynamically Registered BroadcastReceiver}
+\caption[Manifest Code of \emph{KludgeBroadcastRxDyn}]{Manifest Code of \emph{KludgeBroadcastRxDyn}, with Manually Added Filter for Dynamically Registered BroadcastReceiver}
 \label{fig:broadcastDynManifestKludge}
 \end{framed}
 \end{figure}
@@ -218,7 +218,7 @@ D/BcastRxDyn(28399): 35███████████03
 \end{figure}
 
 \section{Dynamically Registered BroadcastReceivers}
-Currently, for a dynamically registered BroadcastReceiver to be handled by DidFail, a dummy static declaration of the BroadcastReceiver must be added to the manifest file so that FlowDroid can appropriately analyze it. This dummy declaration can be added after analysis of the code shows a BroadcastReceiver is dynamically registered, as successfully demonstrated in the test app \textit{KludgeBroadcastRxDyn}.\footnote{This and the other test apps we developed for this project are available for free download at http://www.cs.cmu.edu/~wklieber/didfail/test-apps-dec2014/}
+Currently, for a dynamically registered BroadcastReceiver to be handled by DidFail, a dummy static declaration of the BroadcastReceiver must be added to the manifest file so that FlowDroid can appropriately analyze it. This dummy declaration can be added after analysis of the code shows a BroadcastReceiver is dynamically registered, as successfully demonstrated in the test app \textit{KludgeBroadcastRxDyn}.\footnote{This and the other test apps we developed for this project are available for free download at: \\ {\url{http://www.cs.cmu.edu/~wklieber/didfail/test-apps-dec2014/}}}
 
 Some problems with analyzing dynamically registered BroadcastReceivers have been fixed in the latest version of FlowDroid’s development branch. The develop branch of the standard FlowDroid distribution\footnote{https://github.com/secure-software-engineering/soot-infoflow-android} has newly added handling of some dataflows involving dynamically declared BroadcastReceivers. Their DroidBench\footnote{https://github.com/secure-software-engineering/DroidBench/tree/develop} test app distribution now includes two apps (\textit{BroadcastReceiverLifecycle2} and \textit{BroadcastTaintAndLeak1}), which have dynamically declared BroadcastReceivers with taint flows that FlowDroid detects, and it detects taint flow in our test app \textit{KludgeBroadcastRxDyn}. However, at the time of this writing, the taint flow in our test app \textit{BroadcastRx\_Dyn} is not detected by FlowDroid.
 
