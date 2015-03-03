@@ -252,7 +252,7 @@ Given only the flow from \texttt{getIntent} to \texttt{setResult}, DidFail under
 
 \section{Adding Support for Static Field Flows}
 
-For DidFail to analyze flows involving static fields, FlowDroid needed to be modified to report about how static fields are used in an application. Given that static fields provide a persistent state that can be both read from and written to, it makes sense to treat static fields as both a source \emph{and} a sink. In other words, if sensitive information flows from a source to a static field, we should report the flow, and if content flows from a static field to a sink, we should report that flow as well.
+For DidFail to analyze flows involving static fields, FlowDroid needed to be modified to report about how static fields are used in an application. Given that static fields provide persistent state that can be both read from and written to, it makes sense to treat static fields as both a source \emph{and} a sink. In other words, if sensitive information flows from a source to a static field, we should report the flow, and if content flows from a static field to a sink, we should report that flow as well.
 
 There were a number of key challenges we encountered while trying to add this feature to FlowDroid. First and foremost, FlowDroid handles only sources and sinks that occur as function calls. Consequently, while it is easy to mark a function as a new taint source, there is no support for adding more general types of sources, such as those associated with a specific variable. This limitation meant that we needed to modify the actual code associated with FlowDroid's taint analysis to achieve our goals.
 
